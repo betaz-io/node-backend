@@ -281,6 +281,8 @@ app.post("/getEventsByPlayer", async (req, res) => {
     return res.send({ status: "FAILED", message: "Invalid Address" });
   }
 
+  let win = await database.WinEvent.find({ player: player }).lean();
+  let lose = await database.LoseEvent.find({ player: player }).lean();
   let winData = await database.WinEvent.find({ player: player })
     .sort({ blockNumber: parseInt(sort) })
     .skip(parseInt(offset))
@@ -291,6 +293,7 @@ app.post("/getEventsByPlayer", async (req, res) => {
     .limit(parseInt(limit));
 
   var result = winData.concat(loseData);
+  let total = win.concat(lose).length;
   //console.log(player,result);
   if (sort) {
     result = result
@@ -319,7 +322,7 @@ app.post("/getEventsByPlayer", async (req, res) => {
     oracleRound: result.oracle_round,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 app.post("/getEvents", async (req, res) => {
@@ -332,6 +335,8 @@ app.post("/getEvents", async (req, res) => {
   if (!offset) offset = 0;
   if (!sort) sort = -1;
 
+  let win = await database.WinEvent.find().lean();
+  let lose = await database.LoseEvent.find().lean();
   let winData = await database.WinEvent.find()
     .sort({ blockNumber: parseInt(sort) })
     .skip(parseInt(offset))
@@ -342,6 +347,7 @@ app.post("/getEvents", async (req, res) => {
     .limit(parseInt(limit));
 
   var result = winData.concat(loseData);
+  let total = win.concat(lose).length;
   //console.log(player,result);
   if (sort) {
     result = result
@@ -370,7 +376,7 @@ app.post("/getEvents", async (req, res) => {
     oracleRound: result.oracle_round,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 app.post("/getRareWins", async (req, res) => {
@@ -382,12 +388,17 @@ app.post("/getRareWins", async (req, res) => {
   if (!offset) offset = 0;
   if (!sort) sort = -1;
 
+  let total_data = await database.WinEvent.find({
+    $where: "this.win_amount > 10 * this.bet_amount",
+  }).lean();
   let data = await database.WinEvent.find({
     $where: "this.win_amount > 10 * this.bet_amount",
   })
     .sort({ blockNumber: parseInt(sort) })
     .skip(parseInt(offset))
     .limit(parseInt(limit));
+
+  let total = total_data.length;
 
   if (sort) {
     data = data
@@ -416,7 +427,7 @@ app.post("/getRareWins", async (req, res) => {
     oracleRound: data.oracle_round,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 // finalize
@@ -654,6 +665,8 @@ app.post("/getPendingUnstake", async (req, res) => {
     .skip(parseInt(offset))
     .limit(parseInt(limit));
 
+  let total = data.length;
+
   // format result
   const dataTable = data.map((data) => ({
     index: data.callerIndex,
@@ -662,7 +675,7 @@ app.post("/getPendingUnstake", async (req, res) => {
     time: data.time,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 // send mail
@@ -718,6 +731,7 @@ app.post("/getSubcribeEmail", async (req, res) => {
   let data = await database.EmailSubscribe.find()
     .skip(parseInt(offset))
     .limit(parseInt(limit));
+  let total = data.length;
 
   // format result
   const dataTable = data.map((data) => ({
@@ -725,7 +739,7 @@ app.post("/getSubcribeEmail", async (req, res) => {
     subcribeAt: data.createdAt,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 app.post("/getEmailExist", async (req, res) => {
@@ -816,6 +830,7 @@ app.post("/getWhitelist", async (req, res) => {
   let data = await database.WhitelistManager.find({ poolType: poolType })
     .skip(parseInt(offset))
     .limit(parseInt(limit));
+  let total = data.length;
 
   // format result
   const dataTable = data.map((data) => ({
@@ -825,7 +840,7 @@ app.post("/getWhitelist", async (req, res) => {
     price: data.price,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 app.post("/getRewardByCaller", async (req, res) => {
@@ -840,6 +855,7 @@ app.post("/getRewardByCaller", async (req, res) => {
   let data = await database.ClaimEvent.find({ staker: caller })
     .skip(parseInt(offset))
     .limit(parseInt(limit));
+  let total = data.length;
 
   // format result
   const dataTable = data.map((data) => ({
@@ -848,7 +864,7 @@ app.post("/getRewardByCaller", async (req, res) => {
     reward_amount: data.reward_amount,
   }));
 
-  return res.send({ status: "OK", ret: dataTable });
+  return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
 const cron = require("node-cron");
