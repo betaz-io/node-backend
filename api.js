@@ -281,33 +281,19 @@ app.post("/getEventsByPlayer", async (req, res) => {
     return res.send({ status: "FAILED", message: "Invalid Address" });
   }
 
-  let win = await database.WinEvent.find({ player: player }).lean();
-  let lose = await database.LoseEvent.find({ player: player }).lean();
-  let winData = await database.WinEvent.find({ player: player })
-    .sort({ blockNumber: parseInt(sort) })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
-  let loseData = await database.LoseEvent.find({ player: player })
-    .sort({ blockNumber: parseInt(sort) })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let winData = await database.WinEvent.find({ player: player });
+  let loseData = await database.LoseEvent.find({ player: player });
 
   var result = winData.concat(loseData);
-  let total = win.concat(lose).length;
-  //console.log(player,result);
-  if (sort) {
-    result = result
-      .sort(function (a, b) {
-        return parseInt(b.blockNumber) - parseInt(a.blockNumber);
-      })
-      .slice(0, limit);
-  } else {
-    result = result
-      .sort(function (a, b) {
-        return parseInt(a.blockNumber) - parseInt(b.blockNumber);
-      })
-      .slice(0, limit);
-  }
+  let total = result.length;
+
+  // sort
+  result.sort(
+    (a, b) => (parseInt(a.blockNumber) - parseInt(b.blockNumber)) * sort
+  );
+
+  // pagination
+  result = result.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = result.map((result) => ({
@@ -335,33 +321,20 @@ app.post("/getEvents", async (req, res) => {
   if (!offset) offset = 0;
   if (!sort) sort = -1;
 
-  let win = await database.WinEvent.find().lean();
-  let lose = await database.LoseEvent.find().lean();
-  let winData = await database.WinEvent.find()
-    .sort({ blockNumber: parseInt(sort) })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
-  let loseData = await database.LoseEvent.find()
-    .sort({ blockNumber: parseInt(sort) })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let winData = await database.WinEvent.find();
+  let loseData = await database.LoseEvent.find();
 
   var result = winData.concat(loseData);
-  let total = win.concat(lose).length;
+  let total = result.length;
   //console.log(player,result);
-  if (sort) {
-    result = result
-      .sort(function (a, b) {
-        return parseInt(b.blockNumber) - parseInt(a.blockNumber);
-      })
-      .slice(0, limit);
-  } else {
-    result = result
-      .sort(function (a, b) {
-        return parseInt(a.blockNumber) - parseInt(b.blockNumber);
-      })
-      .slice(0, limit);
-  }
+
+  // sort
+  result.sort(
+    (a, b) => (parseInt(a.blockNumber) - parseInt(b.blockNumber)) * sort
+  );
+
+  // pagination
+  result = result.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = result.map((result) => ({
@@ -388,31 +361,19 @@ app.post("/getRareWins", async (req, res) => {
   if (!offset) offset = 0;
   if (!sort) sort = -1;
 
-  let total_data = await database.WinEvent.find({
-    $where: "this.win_amount > 10 * this.bet_amount",
-  }).lean();
   let data = await database.WinEvent.find({
     $where: "this.win_amount > 10 * this.bet_amount",
-  })
-    .sort({ blockNumber: parseInt(sort) })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  });
 
-  let total = total_data.length;
+  let total = data.length;
 
-  if (sort) {
-    data = data
-      .sort(function (a, b) {
-        return parseInt(b.blockNumber) - parseInt(a.blockNumber);
-      })
-      .slice(0, limit);
-  } else {
-    data = data
-      .sort(function (a, b) {
-        return parseInt(a.blockNumber) - parseInt(b.blockNumber);
-      })
-      .slice(0, limit);
-  }
+  // sort
+  data.sort(
+    (a, b) => (parseInt(a.blockNumber) - parseInt(b.blockNumber)) * sort
+  );
+
+  // pagination
+  data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = data.map((data) => ({
@@ -654,18 +615,31 @@ app.post("/updatePendingUnstake", async (req, res) => {
 // get pending unstake
 app.post("/getPendingUnstake", async (req, res) => {
   if (!req.body) return res.send({ status: "FAILED", message: "No Input" });
-  const { caller, limit, offset } = req.body;
+  let { caller, limit, offset, status } = req.body;
   if (!limit) limit = 15;
   if (!offset) offset = 0;
+  if (!status) status = 0;
   if (!caller) {
     return res.send({ status: "FAILED", message: "Invalid Address" });
   }
 
-  let data = await database.PendingUnstake.find({ caller: caller })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let data = await database.PendingUnstake.find({ caller: caller });
 
   let total = data.length;
+  if (status == 1) {
+    data = data.filter((e) => {
+      return +new Date() < e.time;
+    });
+    total = data.length;
+  } else if (status == 2) {
+    data = data.filter((e) => {
+      return +new Date() >= e.time;
+    });
+    total = data.length;
+  }
+
+  // pagination
+  data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = data.map((data) => ({
@@ -728,10 +702,12 @@ app.post("/getSubcribeEmail", async (req, res) => {
   if (!limit) limit = 15;
   if (!offset) offset = 0;
 
-  let data = await database.EmailSubscribe.find()
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let data = await database.EmailSubscribe.find();
+
   let total = data.length;
+
+  // pagination
+  data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = data.map((data) => ({
@@ -827,10 +803,12 @@ app.post("/getWhitelist", async (req, res) => {
     return res.send({ status: "FAILED", message: "Invalid pool type" });
   }
 
-  let data = await database.WhitelistManager.find({ poolType: poolType })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let data = await database.WhitelistManager.find({ poolType: poolType });
+
   let total = data.length;
+
+  // pagination
+  data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = data.map((data) => ({
@@ -852,10 +830,12 @@ app.post("/getRewardByCaller", async (req, res) => {
     return res.send({ status: "FAILED", message: "Invalid caller" });
   }
 
-  let data = await database.ClaimEvent.find({ staker: caller })
-    .skip(parseInt(offset))
-    .limit(parseInt(limit));
+  let data = await database.ClaimEvent.find({ staker: caller });
+
   let total = data.length;
+
+  // pagination
+  data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
   // format result
   const dataTable = data.map((data) => ({
