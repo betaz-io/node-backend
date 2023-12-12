@@ -870,9 +870,6 @@ cron.schedule(
       await change_state(true).catch((error) => {
         console.error("ErrorChangeState:", error);
         console.log("errorChangeState", error);
-        return res
-          .status(500)
-          .json({ error: "An error occurred change state" });
       });
 
       // consumer contract
@@ -885,9 +882,6 @@ cron.schedule(
       await requestRandomWords(session_id).catch((error) => {
         console.error("ErrorRequestRandomWords:", error);
         console.log("errorRequestRandomWords", error);
-        return res
-          .status(500)
-          .json({ error: "An error occurred requestRandomWords" });
       });
       let check_id = false;
       while (!check_id) {
@@ -936,9 +930,6 @@ cron.schedule(
       await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
         console.log("errorFinalizeWinner", error);
-        return res
-          .status(500)
-          .json({ error: "An error occurred finalizeWinner" });
       });
 
       // handle finalize
@@ -949,15 +940,13 @@ cron.schedule(
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
         console.log("errorFinalizeWinner", error);
-        return res
-          .status(500)
-          .json({ error: "An error occurred finalizeWinner" });
       });
 
       // open padora pool contract
       console.log({ step6: "Find winner" });
 
       let totalWinner = await totalTicketsWin(session_id, random_number);
+      console.log({ totalWinner });
 
       for (let i = 0; i < parseInt(totalWinner); i++) {
         await handle_find_winner(session_id, i);
@@ -968,9 +957,6 @@ cron.schedule(
       await change_state(false).catch((error) => {
         console.error("ErrorChangeState:", error);
         console.log("errorChangeState", error);
-        return res
-          .status(500)
-          .json({ error: "An error occurred change state" });
       });
     } catch (error) {
       console.error("Error:", error);
