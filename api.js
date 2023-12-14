@@ -42,15 +42,17 @@ let {
   requestRandomWords,
 } = require("./contracts/pandora_random.js");
 
-// betaz contract
+// pandora contract
 let { pandora_contract } = require("./contracts/pandora_contract.js");
 let {
   setPadoraPoolContract,
   finalize,
-  change_state,
+  updateIsLocked,
+  getIsLocked,
   getLastSessionId,
   handle_find_winner,
   totalTicketsWin,
+  getTotalWinAmount,
 } = require("./contracts/pandora_contract_calls.js");
 
 let { getEstimatedGas, delay, convertTimeStampToNumber } = require("./utils");
@@ -142,127 +144,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
 
-app.get("/api", (req, res) => {
+app.get("/", (req, res) => {
   res.send("Wellcome BET AZ!");
 });
 
 app.get("/test", async (req, res) => {
-  try {
-    let session_id = await getLastSessionId();
-    session_id = parseInt(session_id);
-    // session_id = parseInt(2);
-
-    // pause padora pool contract
-    console.log({
-      step1: "Pause padora pool contract",
-    });
-
-    await change_state(true).catch((error) => {
-      console.error("ErrorChangeState:", error);
-      console.log("errorChangeState", error);
-      return res.status(500).json({ error: "An error occurred change state" });
-    });
-
-    // consumer contract
-    console.log({ step2: "Find randomnumber with chainlink" });
-    /// get last request id
-    let lastRequestId = await getLastRequestId();
-
-    /// handle request random
-    let seconds = 0;
-    await requestRandomWords(session_id).catch((error) => {
-      console.error("ErrorRequestRandomWords:", error);
-      console.log("errorRequestRandomWords", error);
-      return res
-        .status(500)
-        .json({ error: "An error occurred requestRandomWords" });
-    });
-    let check_id = false;
-    while (!check_id) {
-      try {
-        const newRequestId = await getLastRequestId();
-        if (newRequestId !== lastRequestId) {
-          check_id = true;
-          lastRequestId = newRequestId;
-        } else {
-          await delay(1000);
-          seconds += 1;
-          console.log({ seconds });
-        }
-      } catch (err) {
-        console.log({ errorGetId: err });
-        break;
-      }
-    }
-
-    /// get random number
-    let random_number = false;
-    while (!random_number) {
-      try {
-        const requestStatus = await getRequestStatus(lastRequestId);
-        if (requestStatus[2].length === 0) {
-          await delay(1000);
-          seconds += 1;
-          console.log({ seconds });
-        } else {
-          random_number = parseInt(requestStatus[2][0]);
-          console.log({ random_number });
-          random_number = 11111;
-        }
-      } catch (err) {
-        console.log({ errorGetRandomNumber: err });
-        break;
-      }
-    }
-
-    // let random_number = 123;
-    // tranfer pandora amounts core pool to pandora pool
-    console.log({
-      step3:
-        "Tranfer pandora amounts core pool to pandora pool and set status Finalized for session",
-    });
-    await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
-      console.error("ErrorFinalizeWinner:", error);
-      console.log("errorFinalizeWinner", error);
-      return res
-        .status(500)
-        .json({ error: "An error occurred finalizeWinner" });
-    });
-
-    // handle finalize
-    console.log({
-      step4:
-        "add random number, set status Completed for session and add new sesssion",
-    });
-    await finalize(session_id, random_number).catch((error) => {
-      console.error("ErrorFinalizeWinner:", error);
-      console.log("errorFinalizeWinner", error);
-      return res
-        .status(500)
-        .json({ error: "An error occurred finalizeWinner" });
-    });
-
-    // open padora pool contract
-    console.log({ step6: "Find winner" });
-
-    let totalWinner = await totalTicketsWin(session_id, random_number);
-
-    for (let i = 0; i < parseInt(totalWinner); i++) {
-      await handle_find_winner(session_id, i);
-    }
-
-    // open padora pool contract
-    console.log({ step6: "Open padora pool contract" });
-    await change_state(false).catch((error) => {
-      console.error("ErrorChangeState:", error);
-      console.log("errorChangeState", error);
-      return res.status(500).json({ error: "An error occurred change state" });
-    });
-  } catch (error) {
-    console.error("Error:", error);
-    console.log("Error:", error);
-  }
-
   res.send("Wellcome BET AZ!");
 });
 
@@ -860,13 +746,15 @@ cron.schedule(
 
       // pause padora pool contract
       console.log({
-        step1: "Pause padora pool contract",
+        step1: "Locked padora pool contract",
       });
-
-      await change_state(true).catch((error) => {
-        console.error("ErrorChangeState:", error);
-        console.log("errorChangeState", error);
-      });
+      let is_locked = await getIsLocked();
+      if (!is_locked) {
+        await updateIsLocked(true).catch((error) => {
+          console.error("ErrorChangeState:", error);
+          console.log("errorChangeState", error);
+        });
+      }
 
       // consumer contract
       console.log({ step2: "Find randomnumber with chainlink" });
@@ -928,10 +816,12 @@ cron.schedule(
         console.log("errorFinalizeWinner", error);
       });
 
+      let total_win_amounts = await getTotalWinAmount();
+      console.log({ total_win_amounts });
+
       // handle finalize
       console.log({
-        step4:
-          "add random number, set status Completed for session and add new sesssion",
+        step4: "finalize",
       });
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
@@ -939,7 +829,7 @@ cron.schedule(
       });
 
       // open padora pool contract
-      console.log({ step6: "Find winner" });
+      console.log({ step5: "Find winner" });
 
       let totalWinner = await totalTicketsWin(session_id, random_number);
       console.log({ totalWinner });
@@ -948,12 +838,15 @@ cron.schedule(
         await handle_find_winner(session_id, i);
       }
 
-      // open padora pool contract
+      // unlock padora pool contract
       console.log({ step6: "Open padora pool contract" });
-      await change_state(false).catch((error) => {
-        console.error("ErrorChangeState:", error);
-        console.log("errorChangeState", error);
-      });
+      is_locked = await getIsLocked();
+      if (is_locked) {
+        await updateIsLocked(false).catch((error) => {
+          console.error("ErrorChangeState:", error);
+          console.log("errorChangeState", error);
+        });
+      }
     } catch (error) {
       console.error("Error:", error);
       console.log("Error:", error);
