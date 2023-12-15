@@ -53,6 +53,9 @@ let {
   handle_find_winner,
   totalTicketsWin,
   getTotalWinAmount,
+  addChainlinkRequestId,
+  getChainlinkRequestIdBySessionId,
+  getBetSession,
 } = require("./contracts/pandora_contract_calls.js");
 
 let { getEstimatedGas, delay, convertTimeStampToNumber } = require("./utils");
@@ -777,14 +780,27 @@ app.post("/getRewardByCaller", async (req, res) => {
 const cron = require("node-cron");
 // second (optional) - minute - hour - day of month - month - day of week (7)
 cron.schedule(
-  "30 6 * * 7",
+  "55 22 * * 5",
   async () => {
     // run
     try {
       let session_id = await getLastSessionId();
       session_id = parseInt(session_id);
       console.log({ session_id });
-      // session_id = parseInt(2);
+
+      // tranfer pandora amounts core pool to pandora pool
+      // console.log({
+      //   step0:
+      //     "Tranfer pandora amounts core pool to pandora pool and set status Finalized for session",
+      // });
+
+      // await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
+      //   console.error("ErrorFinalizeWinner:", error);
+      //   console.log("errorFinalizeWinner", error);
+      // });
+
+      let total_win_amounts = await getTotalWinAmount();
+      console.log({ total_win_amounts });
 
       // pause padora pool contract
       console.log({
@@ -840,7 +856,10 @@ cron.schedule(
           } else {
             random_number = parseInt(requestStatus[2][0]);
             console.log("Find random number successfully");
-            // random_number = 11111;
+            session_id = parseInt(requestStatus[1]);
+            console.log(
+              `Get session id: ${session_id} by request id: ${lastRequestId} in chainlick contract`
+            );
           }
         } catch (err) {
           console.log({ errorGetRandomNumber: err });
@@ -849,45 +868,53 @@ cron.schedule(
       }
 
       // Add request id to bet session
+      let bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      if (bet_session.status == "Finalized") {
+        console.log(
+          `Add request id: ${lastRequestId} to session id: ${session_id} in pandora contract`
+        );
+        await addChainlinkRequestId(session_id, lastRequestId);
 
-      // get request id by session id
+        // get request id by session id
+        let requestId = await getChainlinkRequestIdBySessionId(session_id);
 
-      // get random number by request id
-
-      // tranfer pandora amounts core pool to pandora pool
-      console.log({
-        step3:
-          "Tranfer pandora amounts core pool to pandora pool and set status Finalized for session",
-      });
-      await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
-        console.error("ErrorFinalizeWinner:", error);
-        console.log("errorFinalizeWinner", error);
-      });
-
-      let total_win_amounts = await getTotalWinAmount();
-      console.log({ total_win_amounts });
+        // get random number by request id
+        const requestStatus = await getRequestStatus(requestId);
+        random_number = parseInt(requestStatus[2][0]);
+        console.log({ session_id, requestId, random_number });
+      } else console.log("Session not Finalized");
 
       // handle finalize
       console.log({
-        step4: "finalize",
-      });
-      await finalize(session_id, random_number).catch((error) => {
-        console.error("ErrorFinalizeWinner:", error);
-        console.log("errorFinalizeWinner", error);
+        step3: "finalize",
       });
 
+      bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      if (bet_session.status == "Finalized") {
+        await finalize(session_id, random_number).catch((error) => {
+          console.error("ErrorFinalizeWinner:", error);
+          console.log("errorFinalizeWinner", error);
+        });
+      } else console.log("Session not Finalized");
+
       // find winner
-      console.log({ step5: "Find winner" });
+      console.log({ step4: "Find winner" });
 
       let totalWinner = await totalTicketsWin(session_id, random_number);
       console.log({ totalWinner });
 
-      for (let i = 0; i < parseInt(totalWinner); i++) {
-        await handle_find_winner(session_id, i);
-      }
+      bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      if (bet_session.status == "Completed") {
+        for (let i = 0; i < parseInt(totalWinner); i++) {
+          await handle_find_winner(session_id, i);
+        }
+      } else console.log("Session not Completed");
 
       // unlock padora pool contract
-      console.log({ step6: "Open padora pool contract" });
+      console.log({ step5: "Open padora pool contract" });
       is_locked = await getIsLocked();
       if (is_locked) {
         await updateIsLocked(false).catch((error) => {

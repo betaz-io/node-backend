@@ -111,49 +111,6 @@ const handle_find_winner = async (session_id, index) => {
   });
 };
 
-const change_state = async (state) => {
-  let gasLimit;
-  const value = 0;
-
-  const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
-  const keypair = keyring.createFromUri(PHRASE);
-
-  gasLimit = await getEstimatedGas(
-    keypair.address,
-    contract,
-    value,
-    "pandoraPoolTraits::changeState",
-    state
-  );
-
-  return new Promise((resolve, reject) => {
-    contract.tx["pandoraPoolTraits::changeState"]({ gasLimit, value }, state)
-      .signAndSend(keypair, async ({ status, dispatchError }) => {
-        if (dispatchError) {
-          if (dispatchError.isModule) {
-            console.log(dispatchError);
-          } else {
-            console.log("dispatchError", dispatchError.toString());
-          }
-        }
-
-        if (status.isInBlock) {
-          console.log(`${state ? "Lock" : "Unlock"} pandora pool contract ...`);
-        } else if (status.isFinalized) {
-          console.log(
-            `${state ? "Lock" : "Unlock"} pandora pool contract finalized`
-          );
-          resolve();
-        }
-      })
-      .catch((e) => {
-        console.log("changeState ERROR", e);
-        reject(e); // Reject the promise with the error
-      });
-  });
-};
-
 const updateIsLocked = async (state) => {
   let gasLimit;
   const value = 0;
@@ -380,6 +337,121 @@ const isAdmin = async function (account) {
   return false;
 };
 
+const addChainlinkRequestId = async (session_id, request_id) => {
+  let gasLimit;
+  const value = 0;
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const PHRASE = process.env.PHRASE;
+  const keypair = keyring.createFromUri(PHRASE);
+
+  gasLimit = await getEstimatedGas(
+    keypair.address,
+    contract,
+    value,
+    "pandoraPoolTraits::addChainlinkRequestId",
+    { u32: session_id },
+    request_id?.toString()
+  );
+
+  return new Promise((resolve, reject) => {
+    contract.tx["pandoraPoolTraits::addChainlinkRequestId"](
+      { gasLimit, value },
+      { u32: session_id },
+      request_id?.toString()
+    )
+      .signAndSend(keypair, async ({ status, dispatchError }) => {
+        if (dispatchError) {
+          if (dispatchError.isModule) {
+            console.log(dispatchError);
+          } else {
+            console.log("dispatchError", dispatchError.toString());
+          }
+        }
+
+        if (status.isInBlock) {
+          console.log(
+            `Add Chainlink Request Id: ${request_id?.toString()} to session ${session_id} ...`
+          );
+        } else if (status.isFinalized) {
+          console.log(`Add Chainlink finalized`);
+          resolve();
+        }
+      })
+      .catch((e) => {
+        console.log("changeState ERROR", e);
+        reject(e); // Reject the promise with the error
+      });
+  });
+};
+
+const getChainlinkRequestIdBySessionId = async function (session_id) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getChainlinkRequestIdBySessionId"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      session_id
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log(
+      "@_@ ",
+      "getChainlinkRequestIdBySessionId",
+      " error >>",
+      error.message
+    );
+  }
+
+  return null;
+};
+
+const getBetSession = async function (session_id) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getBetSession"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      session_id
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getBetSession", " error >>", error.message);
+  }
+
+  return null;
+};
+
 module.exports = {
   setPadoraPoolContract,
   setPandoraPoolAbiContract,
@@ -392,4 +464,7 @@ module.exports = {
   totalTicketsWin,
   multipleMintTicket,
   isAdmin,
+  addChainlinkRequestId,
+  getChainlinkRequestIdBySessionId,
+  getBetSession,
 };
