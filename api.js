@@ -783,6 +783,7 @@ cron.schedule(
     try {
       let session_id = await getLastSessionId();
       session_id = parseInt(session_id);
+      console.log({ session_id });
       // session_id = parseInt(2);
 
       // pause padora pool contract
@@ -801,6 +802,7 @@ cron.schedule(
       console.log({ step2: "Find randomnumber with chainlink" });
       /// get last request id
       let lastRequestId = await getLastRequestId();
+      console.log({ lastRequestId });
 
       /// handle request random
       let seconds = 0;
@@ -826,7 +828,7 @@ cron.schedule(
         }
       }
 
-      /// get random number
+      /// find random number
       let random_number = false;
       while (!random_number) {
         try {
@@ -837,7 +839,7 @@ cron.schedule(
             console.log({ seconds });
           } else {
             random_number = parseInt(requestStatus[2][0]);
-            console.log({ random_number });
+            console.log("Find random number successfully");
             // random_number = 11111;
           }
         } catch (err) {
@@ -846,7 +848,12 @@ cron.schedule(
         }
       }
 
-      // let random_number = 123;
+      // Add request id to bet session
+
+      // get request id by session id
+
+      // get random number by request id
+
       // tranfer pandora amounts core pool to pandora pool
       console.log({
         step3:
@@ -869,7 +876,7 @@ cron.schedule(
         console.log("errorFinalizeWinner", error);
       });
 
-      // open padora pool contract
+      // find winner
       console.log({ step5: "Find winner" });
 
       let totalWinner = await totalTicketsWin(session_id, random_number);
