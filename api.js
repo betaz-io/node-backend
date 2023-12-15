@@ -148,8 +148,49 @@ app.get("/", (req, res) => {
   res.send("Wellcome BET AZ!");
 });
 
-app.get("/test", async (req, res) => {
-  res.send("Wellcome BET AZ!");
+app.get("/statistic", async (req, res) => {
+  try {
+    let winData = await database.WinEvent.find();
+    let loseData = await database.LoseEvent.find();
+    let result = winData.concat(loseData);
+
+    // total player
+    const playersArray = result.map((record) => record.player);
+    const uniquePlayersSet = new Set(playersArray);
+    const uniquePlayersArray = Array.from(uniquePlayersSet);
+    const totalPlayers = uniquePlayersArray.length;
+
+    // total reward
+    const totalBetAmount = result.reduce(
+      (total, record) => total + record.bet_amount,
+      0
+    );
+
+    // total win amount
+    const totalWinAmount = winData.reduce(
+      (total, record) => total + record.win_amount,
+      0
+    );
+
+    // total bet amount
+    const totalRewardAmount = result.reduce(
+      (total, record) => total + record.reward_amount,
+      0
+    );
+
+    const statistics = {
+      totalPlayers,
+      totalBetAmount,
+      totalRewardAmount,
+      totalWinAmount,
+    };
+
+    // console.log(statistics);
+    res.json(statistics);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 
 app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
