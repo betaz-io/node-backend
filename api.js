@@ -124,6 +124,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const express = require("express");
 const nodemailer = require("nodemailer");
+const cron = require("node-cron");
 let MobileDetect = require("mobile-detect");
 
 let fs = require("fs");
@@ -141,12 +142,17 @@ const limiter = rateLimit({
 });
 const app = express();
 
+// trust proxy
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
+
+// middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
 
+// router
 app.get("/", (req, res) => {
   res.send("Wellcome BET AZ!");
 });
@@ -195,8 +201,6 @@ app.get("/statistic", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 
 app.post("/getEventsByPlayer", async (req, res) => {
   if (!req.body) return res.send({ status: "FAILED", message: "No Input" });
@@ -777,7 +781,6 @@ app.post("/getRewardByCaller", async (req, res) => {
   return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
-const cron = require("node-cron");
 // second (optional) - minute - hour - day of month - month - day of week (7)
 cron.schedule(
   "55 22 * * 5",
