@@ -56,6 +56,8 @@ let {
   addChainlinkRequestId,
   getChainlinkRequestIdBySessionId,
   getBetSession,
+  getIdInSessionByRandomNumberAndIndex,
+  getPlayerByNftId,
 } = require("./contracts/pandora_contract_calls.js");
 
 let { getEstimatedGas, delay, convertTimeStampToNumber } = require("./utils");
@@ -783,10 +785,11 @@ app.post("/getRewardByCaller", async (req, res) => {
 
 // second (optional) - minute - hour - day of month - month - day of week (7)
 cron.schedule(
-  "55 22 * * 5",
+  "30 6 * * 7",
   async () => {
     // run
     try {
+      let players = [];
       let session_id = await getLastSessionId();
       session_id = parseInt(session_id);
       console.log({ session_id });
@@ -895,6 +898,7 @@ cron.schedule(
 
       bet_session = await getBetSession(session_id);
       console.log({ bet_session });
+      // random_number = 123; // test
       if (bet_session.status == "Finalized") {
         await finalize(session_id, random_number).catch((error) => {
           console.error("ErrorFinalizeWinner:", error);
@@ -905,14 +909,25 @@ cron.schedule(
       // find winner
       console.log({ step4: "Find winner" });
 
-      let totalWinner = await totalTicketsWin(session_id, random_number);
-      console.log({ totalWinner });
+      let totalTicketWin = await totalTicketsWin(session_id, random_number);
+      console.log({ totalTicketWin });
 
       bet_session = await getBetSession(session_id);
       console.log({ bet_session });
       if (bet_session.status == "Completed") {
-        for (let i = 0; i < parseInt(totalWinner); i++) {
+        for (let i = 0; i < parseInt(totalTicketWin); i++) {
           await handle_find_winner(session_id, i);
+
+          const token_id = await getIdInSessionByRandomNumberAndIndex(
+            session_id,
+            random_number,
+            i
+          );
+
+          if (token_id) {
+            const player = await getPlayerByNftId(token_id);
+            players.push(player);
+          }
         }
       } else console.log("Session not Completed");
 
@@ -925,6 +940,10 @@ cron.schedule(
           console.log("errorChangeState", error);
         });
       }
+
+      // show player win
+      const win_player = Array.from(new Set(players));
+      console.log({ win_player });
     } catch (error) {
       console.error("Error:", error);
       console.log("Error:", error);

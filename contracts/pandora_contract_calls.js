@@ -452,6 +452,79 @@ const getBetSession = async function (session_id) {
   return null;
 };
 
+const getIdInSessionByRandomNumberAndIndex = async function (
+  session_id,
+  random_number,
+  index
+) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getIdInSessionByRandomNumberAndIndex"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      { u32: session_id },
+      { u32: random_number },
+      { u128: index }
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log(
+      "@_@ ",
+      "getIdInSessionByRandomNumberAndIndex",
+      " error >>",
+      error.message
+    );
+  }
+
+  return null;
+};
+
+const getPlayerByNftId = async function (token_id) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getPlayerByNftId"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      { u64: token_id }
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getPlayerByNftId", " error >>", error.message);
+  }
+
+  return null;
+};
+
 module.exports = {
   setPadoraPoolContract,
   setPandoraPoolAbiContract,
@@ -467,4 +540,6 @@ module.exports = {
   addChainlinkRequestId,
   getChainlinkRequestIdBySessionId,
   getBetSession,
+  getIdInSessionByRandomNumberAndIndex,
+  getPlayerByNftId,
 };
