@@ -183,6 +183,9 @@ app.get("/statistic", async (req, res) => {
       0
     );
 
+    const winRate = (winData.length / result.length) * 100;
+    const loseRate = 100 - winRate;
+
     // total bet amount
     const totalRewardAmount = result.reduce(
       (total, record) => total + record.reward_amount,
@@ -194,6 +197,8 @@ app.get("/statistic", async (req, res) => {
       totalBetAmount,
       totalRewardAmount,
       totalWinAmount,
+      winRate,
+      loseRate,
     };
 
     // console.log(statistics);
