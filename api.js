@@ -239,7 +239,7 @@ app.post("/getEventsByPlayer", async (req, res) => {
     type: result.is_over,
     prediction: result.bet_number,
     randomNumber: result.random_number,
-    wonAmount: result?.win_amount || 0,
+    wonAmount: result?.win_amount - result.bet_amount || 0,
     rewardAmount: result.reward_amount,
     oracleRound: result.oracle_round,
   }));
@@ -280,7 +280,7 @@ app.post("/getEvents", async (req, res) => {
     type: result.is_over,
     prediction: result.bet_number,
     randomNumber: result.random_number,
-    wonAmount: result?.win_amount || 0,
+    wonAmount: result?.win_amount - result.bet_amount || 0,
     rewardAmount: result.reward_amount,
     oracleRound: result.oracle_round,
   }));
@@ -319,7 +319,7 @@ app.post("/getRareWins", async (req, res) => {
     type: data.is_over,
     prediction: data.bet_number,
     randomNumber: data.random_number,
-    wonAmount: data?.win_amount || 0,
+    wonAmount: data?.win_amount - result.bet_amount || 0,
     rewardAmount: data.reward_amount,
     oracleRound: data.oracle_round,
   }));
