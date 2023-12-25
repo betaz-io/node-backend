@@ -2,10 +2,10 @@ require("dotenv").config();
 
 const contract = {
   testnet: {
-    CONTRACT_ADDRESS: "5FjheqaZnNmo5tCeUMRud7PY4hCXebPn83UKFXUiqL3S7bVd",
+    CONTRACT_ADDRESS: "5DreHHf1ihYx1WRPegQp9Zxv6G9bTc8KnGLXugJj3yjN8enA",
     CONTRACT_ABI: {
       source: {
-        hash: "0xbbdbdba7c551c667853d7bb285307e43d396a455bb04984d35ba868dca0db926",
+        hash: "0x68bac76936d993a8a816802908905af7922c8a8c6fee5d2bd72f634964851daf",
         language: "ink! 4.3.0",
         compiler: "rustc 1.75.0-nightly",
         build_info: {
@@ -845,13 +845,41 @@ const contract = {
                     name: "InvalidTotalPurchasedAmount",
                   },
                   {
+                    index: 66,
+                    name: "TicketAmountLimitReached",
+                  },
+                  {
+                    index: 67,
+                    name: "NotTimeToFinalized",
+                  },
+                  {
+                    index: 68,
+                    name: "CallerDoNotHaveVoting",
+                  },
+                  {
+                    index: 69,
+                    name: "SetPoolRationFailed",
+                  },
+                  {
+                    index: 70,
+                    name: "FailToDecreaseClaimableReward",
+                  },
+                  {
+                    index: 71,
+                    name: "RewardNotAdded",
+                  },
+                  {
+                    index: 72,
+                    name: "ChainlinkRequestIdIsExists",
+                  },
+                  {
                     fields: [
                       {
                         type: 11,
                         typeName: "OwnableError",
                       },
                     ],
-                    index: 66,
+                    index: 73,
                     name: "OwnableError",
                   },
                   {
@@ -861,7 +889,7 @@ const contract = {
                         typeName: "AccessControlError",
                       },
                     ],
-                    index: 67,
+                    index: 74,
                     name: "AccessControlError",
                   },
                   {
@@ -871,7 +899,7 @@ const contract = {
                         typeName: "PSP22Error",
                       },
                     ],
-                    index: 68,
+                    index: 75,
                     name: "PSP22Error",
                   },
                   {
@@ -881,7 +909,7 @@ const contract = {
                         typeName: "PSP34Error",
                       },
                     ],
-                    index: 69,
+                    index: 76,
                     name: "PSP34Error",
                   },
                   {
@@ -891,11 +919,11 @@ const contract = {
                         typeName: "PausableError",
                       },
                     ],
-                    index: 70,
+                    index: 77,
                     name: "PausableError",
                   },
                   {
-                    index: 71,
+                    index: 78,
                     name: "CheckedOperations",
                   },
                 ],
