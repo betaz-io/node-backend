@@ -53,6 +53,11 @@ let {
   handle_find_winner,
   totalTicketsWin,
   getTotalWinAmount,
+  addChainlinkRequestId,
+  getChainlinkRequestIdBySessionId,
+  getBetSession,
+  getIdInSessionByRandomNumberAndIndex,
+  getPlayerByNftId,
 } = require("./contracts/pandora_contract_calls.js");
 
 let { getEstimatedGas, delay, convertTimeStampToNumber } = require("./utils");
@@ -121,6 +126,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const express = require("express");
 const nodemailer = require("nodemailer");
+const cron = require("node-cron");
 let MobileDetect = require("mobile-detect");
 
 let fs = require("fs");
@@ -138,12 +144,17 @@ const limiter = rateLimit({
 });
 const app = express();
 
+// trust proxy
+app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
+
+// middleware
 app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
 
+// router
 app.get("/", (req, res) => {
   res.send("Wellcome BET AZ!");
 });
@@ -172,6 +183,9 @@ app.get("/statistic", async (req, res) => {
       0
     );
 
+    const winRate = (winData.length / result.length) * 100;
+    const loseRate = 100 - winRate;
+
     // total bet amount
     const totalRewardAmount = result.reduce(
       (total, record) => total + record.reward_amount,
@@ -183,6 +197,8 @@ app.get("/statistic", async (req, res) => {
       totalBetAmount,
       totalRewardAmount,
       totalWinAmount,
+      winRate,
+      loseRate,
     };
 
     // console.log(statistics);
@@ -192,8 +208,6 @@ app.get("/statistic", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
-app.set("trust proxy", ["loopback", "linklocal", "uniquelocal"]);
 
 app.post("/getEventsByPlayer", async (req, res) => {
   if (!req.body) return res.send({ status: "FAILED", message: "No Input" });
@@ -230,7 +244,7 @@ app.post("/getEventsByPlayer", async (req, res) => {
     type: result.is_over,
     prediction: result.bet_number,
     randomNumber: result.random_number,
-    wonAmount: result?.win_amount || 0,
+    wonAmount: result?.win_amount - result.bet_amount || 0,
     rewardAmount: result.reward_amount,
     oracleRound: result.oracle_round,
   }));
@@ -271,7 +285,7 @@ app.post("/getEvents", async (req, res) => {
     type: result.is_over,
     prediction: result.bet_number,
     randomNumber: result.random_number,
-    wonAmount: result?.win_amount || 0,
+    wonAmount: result?.win_amount - result.bet_amount || 0,
     rewardAmount: result.reward_amount,
     oracleRound: result.oracle_round,
   }));
@@ -310,7 +324,7 @@ app.post("/getRareWins", async (req, res) => {
     type: data.is_over,
     prediction: data.bet_number,
     randomNumber: data.random_number,
-    wonAmount: data?.win_amount || 0,
+    wonAmount: data?.win_amount - result.bet_amount || 0,
     rewardAmount: data.reward_amount,
     oracleRound: data.oracle_round,
   }));
@@ -774,16 +788,30 @@ app.post("/getRewardByCaller", async (req, res) => {
   return res.send({ status: "OK", ret: dataTable, total: total });
 });
 
-const cron = require("node-cron");
 // second (optional) - minute - hour - day of month - month - day of week (7)
 cron.schedule(
   "30 6 * * 7",
   async () => {
     // run
     try {
+      let players = [];
       let session_id = await getLastSessionId();
       session_id = parseInt(session_id);
-      // session_id = parseInt(2);
+      console.log({ session_id });
+
+      // tranfer pandora amounts core pool to pandora pool
+      // console.log({
+      //   step0:
+      //     "Tranfer pandora amounts core pool to pandora pool and set status Finalized for session",
+      // });
+
+      // await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
+      //   console.error("ErrorFinalizeWinner:", error);
+      //   console.log("errorFinalizeWinner", error);
+      // });
+
+      let total_win_amounts = await getTotalWinAmount();
+      console.log({ total_win_amounts });
 
       // pause padora pool contract
       console.log({
@@ -801,6 +829,7 @@ cron.schedule(
       console.log({ step2: "Find randomnumber with chainlink" });
       /// get last request id
       let lastRequestId = await getLastRequestId();
+      console.log({ lastRequestId });
 
       /// handle request random
       let seconds = 0;
@@ -826,7 +855,7 @@ cron.schedule(
         }
       }
 
-      /// get random number
+      /// find random number
       let random_number = false;
       while (!random_number) {
         try {
@@ -837,8 +866,11 @@ cron.schedule(
             console.log({ seconds });
           } else {
             random_number = parseInt(requestStatus[2][0]);
-            console.log({ random_number });
-            // random_number = 11111;
+            console.log("Find random number successfully");
+            session_id = parseInt(requestStatus[1]);
+            console.log(
+              `Get session id: ${session_id} by request id: ${lastRequestId} in chainlick contract`
+            );
           }
         } catch (err) {
           console.log({ errorGetRandomNumber: err });
@@ -846,41 +878,66 @@ cron.schedule(
         }
       }
 
-      // let random_number = 123;
-      // tranfer pandora amounts core pool to pandora pool
-      console.log({
-        step3:
-          "Tranfer pandora amounts core pool to pandora pool and set status Finalized for session",
-      });
-      await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
-        console.error("ErrorFinalizeWinner:", error);
-        console.log("errorFinalizeWinner", error);
-      });
+      // Add request id to bet session
+      let bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      if (bet_session.status == "Finalized") {
+        console.log(
+          `Add request id: ${lastRequestId} to session id: ${session_id} in pandora contract`
+        );
+        await addChainlinkRequestId(session_id, lastRequestId);
 
-      let total_win_amounts = await getTotalWinAmount();
-      console.log({ total_win_amounts });
+        // get request id by session id
+        let requestId = await getChainlinkRequestIdBySessionId(session_id);
+
+        // get random number by request id
+        const requestStatus = await getRequestStatus(requestId);
+        random_number = parseInt(requestStatus[2][0]);
+        console.log({ session_id, requestId, random_number });
+      } else console.log("Session not Finalized");
 
       // handle finalize
       console.log({
-        step4: "finalize",
-      });
-      await finalize(session_id, random_number).catch((error) => {
-        console.error("ErrorFinalizeWinner:", error);
-        console.log("errorFinalizeWinner", error);
+        step3: "finalize",
       });
 
-      // open padora pool contract
-      console.log({ step5: "Find winner" });
+      bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      // random_number = 123; // test
+      if (bet_session.status == "Finalized") {
+        await finalize(session_id, random_number).catch((error) => {
+          console.error("ErrorFinalizeWinner:", error);
+          console.log("errorFinalizeWinner", error);
+        });
+      } else console.log("Session not Finalized");
 
-      let totalWinner = await totalTicketsWin(session_id, random_number);
-      console.log({ totalWinner });
+      // find winner
+      console.log({ step4: "Find winner" });
 
-      for (let i = 0; i < parseInt(totalWinner); i++) {
-        await handle_find_winner(session_id, i);
-      }
+      let totalTicketWin = await totalTicketsWin(session_id, random_number);
+      console.log({ totalTicketWin });
+
+      bet_session = await getBetSession(session_id);
+      console.log({ bet_session });
+      if (bet_session.status == "Completed") {
+        for (let i = 0; i < parseInt(totalTicketWin); i++) {
+          await handle_find_winner(session_id, i);
+
+          const token_id = await getIdInSessionByRandomNumberAndIndex(
+            session_id,
+            random_number,
+            i
+          );
+
+          if (token_id) {
+            const player = await getPlayerByNftId(token_id);
+            players.push(player);
+          }
+        }
+      } else console.log("Session not Completed");
 
       // unlock padora pool contract
-      console.log({ step6: "Open padora pool contract" });
+      console.log({ step5: "Open padora pool contract" });
       is_locked = await getIsLocked();
       if (is_locked) {
         await updateIsLocked(false).catch((error) => {
@@ -888,6 +945,10 @@ cron.schedule(
           console.log("errorChangeState", error);
         });
       }
+
+      // show player win
+      const win_player = Array.from(new Set(players));
+      console.log({ win_player });
     } catch (error) {
       console.error("Error:", error);
       console.log("Error:", error);

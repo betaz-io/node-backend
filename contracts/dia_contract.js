@@ -2,10 +2,10 @@ require("dotenv").config();
 
 const contract = {
   testnet: {
-    CONTRACT_ADDRESS: "5FjheqaZnNmo5tCeUMRud7PY4hCXebPn83UKFXUiqL3S7bVd",
+    CONTRACT_ADDRESS: "5DreHHf1ihYx1WRPegQp9Zxv6G9bTc8KnGLXugJj3yjN8enA",
     CONTRACT_ABI: {
       source: {
-        hash: "0xbbdbdba7c551c667853d7bb285307e43d396a455bb04984d35ba868dca0db926",
+        hash: "0x68bac76936d993a8a816802908905af7922c8a8c6fee5d2bd72f634964851daf",
         language: "ink! 4.3.0",
         compiler: "rustc 1.75.0-nightly",
         build_info: {
@@ -845,13 +845,41 @@ const contract = {
                     name: "InvalidTotalPurchasedAmount",
                   },
                   {
+                    index: 66,
+                    name: "TicketAmountLimitReached",
+                  },
+                  {
+                    index: 67,
+                    name: "NotTimeToFinalized",
+                  },
+                  {
+                    index: 68,
+                    name: "CallerDoNotHaveVoting",
+                  },
+                  {
+                    index: 69,
+                    name: "SetPoolRationFailed",
+                  },
+                  {
+                    index: 70,
+                    name: "FailToDecreaseClaimableReward",
+                  },
+                  {
+                    index: 71,
+                    name: "RewardNotAdded",
+                  },
+                  {
+                    index: 72,
+                    name: "ChainlinkRequestIdIsExists",
+                  },
+                  {
                     fields: [
                       {
                         type: 11,
                         typeName: "OwnableError",
                       },
                     ],
-                    index: 66,
+                    index: 73,
                     name: "OwnableError",
                   },
                   {
@@ -861,7 +889,7 @@ const contract = {
                         typeName: "AccessControlError",
                       },
                     ],
-                    index: 67,
+                    index: 74,
                     name: "AccessControlError",
                   },
                   {
@@ -871,7 +899,7 @@ const contract = {
                         typeName: "PSP22Error",
                       },
                     ],
-                    index: 68,
+                    index: 75,
                     name: "PSP22Error",
                   },
                   {
@@ -881,7 +909,7 @@ const contract = {
                         typeName: "PSP34Error",
                       },
                     ],
-                    index: 69,
+                    index: 76,
                     name: "PSP34Error",
                   },
                   {
@@ -891,11 +919,11 @@ const contract = {
                         typeName: "PausableError",
                       },
                     ],
-                    index: 70,
+                    index: 77,
                     name: "PausableError",
                   },
                   {
-                    index: 71,
+                    index: 78,
                     name: "CheckedOperations",
                   },
                 ],
@@ -1684,10 +1712,10 @@ const contract = {
     },
   },
   mainnet: {
-    CONTRACT_ADDRESS: "5FjheqaZnNmo5tCeUMRud7PY4hCXebPn83UKFXUiqL3S7bVd",
+    CONTRACT_ADDRESS: "5EVDSMuCWJJG63Ur2Qgof37irkxPcxeMGgUm1uh8nvHYLpXe",
     CONTRACT_ABI: {
       source: {
-        hash: "0x70374ab0daf243473d473dbbe6a798ea4c17cb1186df4e505423b71d2e8ea718",
+        hash: "0x68bac76936d993a8a816802908905af7922c8a8c6fee5d2bd72f634964851daf",
         language: "ink! 4.3.0",
         compiler: "rustc 1.75.0-nightly",
         build_info: {
@@ -1736,19 +1764,19 @@ const contract = {
           },
           balance: {
             displayName: ["Balance"],
-            type: 31,
+            type: 32,
           },
           blockNumber: {
             displayName: ["BlockNumber"],
-            type: 21,
+            type: 22,
           },
           chainExtension: {
             displayName: ["ChainExtension"],
-            type: 32,
+            type: 33,
           },
           hash: {
             displayName: ["Hash"],
-            type: 27,
+            type: 28,
           },
           maxEventTopics: 4,
           timestamp: {
@@ -1813,7 +1841,7 @@ const contract = {
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 17,
+              type: 18,
             },
             selector: "0x7f3f47f9",
           },
@@ -1822,11 +1850,11 @@ const contract = {
             default: false,
             docs: [],
             label: "get_latest_round",
-            mutates: true,
+            mutates: false,
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 18,
+              type: 19,
             },
             selector: "0x93a671ac",
           },
@@ -1847,7 +1875,7 @@ const contract = {
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 19,
+              type: 20,
             },
             selector: "0x6d68b62b",
           },
@@ -1855,14 +1883,14 @@ const contract = {
             args: [],
             default: false,
             docs: [],
-            label: "Ownable::renounce_ownership",
-            mutates: true,
+            label: "Ownable::owner",
+            mutates: false,
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 22,
+              type: 23,
             },
-            selector: "0x5e228753",
+            selector: "0x4fa43c8c",
           },
           {
             args: [
@@ -1881,7 +1909,7 @@ const contract = {
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 22,
+              type: 25,
             },
             selector: "0x11f43efd",
           },
@@ -1889,14 +1917,14 @@ const contract = {
             args: [],
             default: false,
             docs: [],
-            label: "Ownable::owner",
-            mutates: false,
+            label: "Ownable::renounce_ownership",
+            mutates: true,
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
               type: 25,
             },
-            selector: "0x4fa43c8c",
+            selector: "0x5e228753",
           },
           {
             args: [],
@@ -1907,7 +1935,7 @@ const contract = {
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 26,
+              type: 27,
             },
             selector: "0xd123ce11",
           },
@@ -1917,7 +1945,7 @@ const contract = {
                 label: "new_code_hash",
                 type: {
                   displayName: ["upgradeable_external", "SetCodeHashInput1"],
-                  type: 27,
+                  type: 28,
                 },
               },
             ],
@@ -1928,7 +1956,7 @@ const contract = {
             payable: false,
             returnType: {
               displayName: ["ink", "MessageResult"],
-              type: 28,
+              type: 29,
             },
             selector: "0x1700ae80",
           },
@@ -2447,13 +2475,121 @@ const contract = {
                     name: "InvalidEndTime",
                   },
                   {
+                    index: 46,
+                    name: "NotTokenOwner",
+                  },
+                  {
+                    index: 47,
+                    name: "CannotIncreaseLastTokenId",
+                  },
+                  {
+                    index: 48,
+                    name: "CannotSetAttributes",
+                  },
+                  {
+                    index: 49,
+                    name: "SessionNotExists",
+                  },
+                  {
+                    index: 50,
+                    name: "SessionIsExists",
+                  },
+                  {
+                    index: 51,
+                    name: "BetIsExists",
+                  },
+                  {
+                    index: 52,
+                    name: "SessionNotCompleted",
+                  },
+                  {
+                    index: 53,
+                    name: "SessionNotFinished",
+                  },
+                  {
+                    index: 54,
+                    name: "SessionNotProcessed",
+                  },
+                  {
+                    index: 55,
+                    name: "YouAreNotWinner",
+                  },
+                  {
+                    index: 56,
+                    name: "InvalidState",
+                  },
+                  {
+                    index: 57,
+                    name: "SessionNotTicketWin",
+                  },
+                  {
+                    index: 58,
+                    name: "NftIsUsed",
+                  },
+                  {
+                    index: 59,
+                    name: "NftIsNotUsed",
+                  },
+                  {
+                    index: 60,
+                    name: "CannotBurn",
+                  },
+                  {
+                    index: 61,
+                    name: "NextSessionsNotExists",
+                  },
+                  {
+                    index: 62,
+                    name: "AddSessionFailed",
+                  },
+                  {
+                    index: 63,
+                    name: "InvalidFee",
+                  },
+                  {
+                    index: 64,
+                    name: "PoolIsExists",
+                  },
+                  {
+                    index: 65,
+                    name: "InvalidTotalPurchasedAmount",
+                  },
+                  {
+                    index: 66,
+                    name: "TicketAmountLimitReached",
+                  },
+                  {
+                    index: 67,
+                    name: "NotTimeToFinalized",
+                  },
+                  {
+                    index: 68,
+                    name: "CallerDoNotHaveVoting",
+                  },
+                  {
+                    index: 69,
+                    name: "SetPoolRationFailed",
+                  },
+                  {
+                    index: 70,
+                    name: "FailToDecreaseClaimableReward",
+                  },
+                  {
+                    index: 71,
+                    name: "RewardNotAdded",
+                  },
+                  {
+                    index: 72,
+                    name: "ChainlinkRequestIdIsExists",
+                  },
+                  {
                     fields: [
                       {
                         type: 11,
                         typeName: "OwnableError",
                       },
                     ],
-                    index: 46,
+                    index: 73,
                     name: "OwnableError",
                   },
                   {
@@ -2463,7 +2599,7 @@ const contract = {
                         typeName: "AccessControlError",
                       },
                     ],
-                    index: 47,
+                    index: 74,
                     name: "AccessControlError",
                   },
                   {
@@ -2473,21 +2609,31 @@ const contract = {
                         typeName: "PSP22Error",
                       },
                     ],
-                    index: 48,
+                    index: 75,
                     name: "PSP22Error",
                   },
                   {
                     fields: [
                       {
                         type: 16,
+                        typeName: "PSP34Error",
+                      },
+                    ],
+                    index: 76,
+                    name: "PSP34Error",
+                  },
+                  {
+                    fields: [
+                      {
+                        type: 17,
                         typeName: "PausableError",
                       },
                     ],
-                    index: 49,
+                    index: 77,
                     name: "PausableError",
                   },
                   {
-                    index: 50,
+                    index: 78,
                     name: "CheckedOperations",
                   },
                 ],
@@ -2683,6 +2829,60 @@ const contract = {
               variant: {
                 variants: [
                   {
+                    fields: [
+                      {
+                        type: 10,
+                        typeName: "String",
+                      },
+                    ],
+                    index: 0,
+                    name: "Custom",
+                  },
+                  {
+                    index: 1,
+                    name: "SelfApprove",
+                  },
+                  {
+                    index: 2,
+                    name: "NotApproved",
+                  },
+                  {
+                    index: 3,
+                    name: "TokenExists",
+                  },
+                  {
+                    index: 4,
+                    name: "TokenNotExists",
+                  },
+                  {
+                    fields: [
+                      {
+                        type: 10,
+                        typeName: "String",
+                      },
+                    ],
+                    index: 5,
+                    name: "SafeTransferCheckFailed",
+                  },
+                ],
+              },
+            },
+            path: [
+              "openbrush_contracts",
+              "traits",
+              "errors",
+              "psp34",
+              "PSP34Error",
+            ],
+          },
+        },
+        {
+          id: 17,
+          type: {
+            def: {
+              variant: {
+                variants: [
+                  {
                     index: 0,
                     name: "Paused",
                   },
@@ -2703,7 +2903,7 @@ const contract = {
           },
         },
         {
-          id: 17,
+          id: 18,
           type: {
             def: {
               variant: {
@@ -2743,7 +2943,7 @@ const contract = {
           },
         },
         {
-          id: 18,
+          id: 19,
           type: {
             def: {
               variant: {
@@ -2783,7 +2983,7 @@ const contract = {
           },
         },
         {
-          id: 19,
+          id: 20,
           type: {
             def: {
               variant: {
@@ -2791,7 +2991,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 20,
+                        type: 21,
                       },
                     ],
                     index: 0,
@@ -2812,7 +3012,7 @@ const contract = {
             params: [
               {
                 name: "T",
-                type: 20,
+                type: 21,
               },
               {
                 name: "E",
@@ -2823,7 +3023,7 @@ const contract = {
           },
         },
         {
-          id: 20,
+          id: 21,
           type: {
             def: {
               variant: {
@@ -2835,7 +3035,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 21,
+                        type: 22,
                       },
                     ],
                     index: 1,
@@ -2847,14 +3047,14 @@ const contract = {
             params: [
               {
                 name: "T",
-                type: 21,
+                type: 22,
               },
             ],
             path: ["Option"],
           },
         },
         {
-          id: 21,
+          id: 22,
           type: {
             def: {
               primitive: "u32",
@@ -2862,7 +3062,7 @@ const contract = {
           },
         },
         {
-          id: 22,
+          id: 23,
           type: {
             def: {
               variant: {
@@ -2870,7 +3070,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 23,
+                        type: 24,
                       },
                     ],
                     index: 0,
@@ -2891,51 +3091,11 @@ const contract = {
             params: [
               {
                 name: "T",
-                type: 23,
+                type: 24,
               },
               {
                 name: "E",
                 type: 6,
-              },
-            ],
-            path: ["Result"],
-          },
-        },
-        {
-          id: 23,
-          type: {
-            def: {
-              variant: {
-                variants: [
-                  {
-                    fields: [
-                      {
-                        type: 4,
-                      },
-                    ],
-                    index: 0,
-                    name: "Ok",
-                  },
-                  {
-                    fields: [
-                      {
-                        type: 11,
-                      },
-                    ],
-                    index: 1,
-                    name: "Err",
-                  },
-                ],
-              },
-            },
-            params: [
-              {
-                name: "T",
-                type: 4,
-              },
-              {
-                name: "E",
-                type: 11,
               },
             ],
             path: ["Result"],
@@ -2981,7 +3141,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 24,
+                        type: 26,
                       },
                     ],
                     index: 0,
@@ -3002,7 +3162,7 @@ const contract = {
             params: [
               {
                 name: "T",
-                type: 24,
+                type: 26,
               },
               {
                 name: "E",
@@ -3014,6 +3174,46 @@ const contract = {
         },
         {
           id: 26,
+          type: {
+            def: {
+              variant: {
+                variants: [
+                  {
+                    fields: [
+                      {
+                        type: 4,
+                      },
+                    ],
+                    index: 0,
+                    name: "Ok",
+                  },
+                  {
+                    fields: [
+                      {
+                        type: 11,
+                      },
+                    ],
+                    index: 1,
+                    name: "Err",
+                  },
+                ],
+              },
+            },
+            params: [
+              {
+                name: "T",
+                type: 4,
+              },
+              {
+                name: "E",
+                type: 11,
+              },
+            ],
+            path: ["Result"],
+          },
+        },
+        {
+          id: 27,
           type: {
             def: {
               variant: {
@@ -3053,7 +3253,7 @@ const contract = {
           },
         },
         {
-          id: 27,
+          id: 28,
           type: {
             def: {
               composite: {
@@ -3069,7 +3269,7 @@ const contract = {
           },
         },
         {
-          id: 28,
+          id: 29,
           type: {
             def: {
               variant: {
@@ -3077,7 +3277,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 29,
+                        type: 30,
                       },
                     ],
                     index: 0,
@@ -3098,7 +3298,7 @@ const contract = {
             params: [
               {
                 name: "T",
-                type: 29,
+                type: 30,
               },
               {
                 name: "E",
@@ -3109,7 +3309,7 @@ const contract = {
           },
         },
         {
-          id: 29,
+          id: 30,
           type: {
             def: {
               variant: {
@@ -3126,7 +3326,7 @@ const contract = {
                   {
                     fields: [
                       {
-                        type: 30,
+                        type: 31,
                       },
                     ],
                     index: 1,
@@ -3142,14 +3342,14 @@ const contract = {
               },
               {
                 name: "E",
-                type: 30,
+                type: 31,
               },
             ],
             path: ["Result"],
           },
         },
         {
-          id: 30,
+          id: 31,
           type: {
             def: {
               variant: {
@@ -3201,7 +3401,7 @@ const contract = {
           },
         },
         {
-          id: 31,
+          id: 32,
           type: {
             def: {
               primitive: "u128",
@@ -3209,7 +3409,7 @@ const contract = {
           },
         },
         {
-          id: 32,
+          id: 33,
           type: {
             def: {
               variant: {},
