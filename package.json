@@ -9,7 +9,7 @@
     "scan": "nodemon a0bet_events_collector.js",
     "auto-claim-reward": "nodemon autoScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon autoScript/autoSetCalimedStatusStaking.js",
-    "auto-mint-ticket": "nodemon autoScript/autoMintTicket.js"
+    "auto-withdraw-hold-amount": "nodemon autoScript/autoWithdrawHoldAmount.js"
   },
   "author": "NAD",
   "license": "ISC",

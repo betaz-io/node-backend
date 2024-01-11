@@ -1,6 +1,7 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
 let { readOnlyGasLimit, getEstimatedGas } = require("../utils");
+const { BN } = require("bn.js");
 require("dotenv").config();
 
 let contract;
@@ -328,7 +329,7 @@ const isAdmin = async function (account) {
     );
 
     if (result.isOk) {
-      return output.toHuman().Ok?.replaceAll(",", "");
+      return output.toHuman().Ok;
     }
   } catch (error) {
     console.log("@_@ ", "hasRole", " error >>", error.message);
@@ -525,6 +526,145 @@ const getPlayerByNftId = async function (token_id) {
   return null;
 };
 
+const getHoldPlayerCount = async function () {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getHoldPlayerCount"
+    ](defaultCaller, {
+      gasLimit,
+      value,
+    });
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getHoldPlayerCount", " error >>", error.message);
+  }
+
+  return null;
+};
+
+const getHoldPlayersByIndex = async function (index) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getHoldPlayersByIndex"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      { u64: index }
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getHoldPlayersByIndex", " error >>", error.message);
+  }
+
+  return null;
+};
+
+const getHoldAmountPlayers = async function (player) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getHoldAmountPlayers"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      player
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a?.replaceAll(",", "") / 10 ** 12;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getHoldAmountPlayers", " error >>", error.message);
+  }
+
+  return null;
+};
+
+const withdrawHoldAmount = async (receiver, amount) => {
+  let gasLimit;
+  const value = 0;
+
+  const keyring = new Keyring({ type: "sr25519" });
+  const PHRASE = process.env.PHRASE;
+  const keypair = keyring.createFromUri(PHRASE);
+
+  let azero_amount = new BN(amount * 10 ** 6).mul(new BN(10 ** 6)).toString();
+
+  gasLimit = await getEstimatedGas(
+    keypair.address,
+    contract,
+    value,
+    "pandoraPoolTraits::withdrawHoldAmount",
+    receiver,
+    azero_amount
+  );
+
+  return new Promise((resolve, reject) => {
+    contract.tx["pandoraPoolTraits::withdrawHoldAmount"](
+      { gasLimit, value },
+      receiver,
+      azero_amount
+    )
+      .signAndSend(keypair, async ({ status, dispatchError }) => {
+        if (dispatchError) {
+          if (dispatchError.isModule) {
+            console.log(dispatchError);
+          } else {
+            console.log("dispatchError", dispatchError.toString());
+          }
+        }
+
+        if (status.isInBlock) {
+          console.log(
+            `Withdraw hold amount player: ${receiver} and amount: ${amount} ...`
+          );
+        } else if (status.isFinalized) {
+          console.log(`Withdraw hold amount player: ${receiver} finalized`);
+          resolve(receiver);
+        }
+      })
+      .catch((e) => {
+        console.log("changeState ERROR", e);
+        reject(e); // Reject the promise with the error
+      });
+  });
+};
+
 module.exports = {
   setPadoraPoolContract,
   setPandoraPoolAbiContract,
@@ -542,4 +682,8 @@ module.exports = {
   getBetSession,
   getIdInSessionByRandomNumberAndIndex,
   getPlayerByNftId,
+  getHoldPlayerCount,
+  getHoldPlayersByIndex,
+  getHoldAmountPlayers,
+  withdrawHoldAmount,
 };
