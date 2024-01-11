@@ -536,7 +536,7 @@ const getHoldPlayerCount = async function () {
 
   try {
     const { result, output } = await contract.query[
-      "pandoraPoolTraits::getHoldBidderCount"
+      "pandoraPoolTraits::getHoldPlayerCount"
     ](defaultCaller, {
       gasLimit,
       value,
