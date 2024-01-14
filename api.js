@@ -324,7 +324,7 @@ app.post("/getRareWins", async (req, res) => {
     type: data.is_over,
     prediction: data.bet_number,
     randomNumber: data.random_number,
-    wonAmount: data?.win_amount - result.bet_amount || 0,
+    wonAmount: data?.win_amount - data.bet_amount || 0,
     rewardAmount: data.reward_amount,
     oracleRound: data.oracle_round,
   }));
