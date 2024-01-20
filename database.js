@@ -85,6 +85,22 @@ const PendingUnstakeSchema = new mongoose.Schema({
     type: Number,
   },
 });
+
+const HistoryStakingSchema = new mongoose.Schema({
+  caller: {
+    type: String,
+  },
+  amount: {
+    type: Number,
+  },
+  currentTime: {
+    type: Number,
+  },
+  status: {
+    type: String,
+  },
+});
+
 const WhitelistManagerSchema = new mongoose.Schema({
   poolType: {
     type: String,
@@ -260,6 +276,7 @@ module.exports = {
   ClaimEvent: mongoose.model("ClaimEvent", ClaimEventSchema),
   EmailSubscribe: mongoose.model("EmailSubscribe", EmailSubscribeSchema),
   PendingUnstake: mongoose.model("PendingUnstake", PendingUnstakeSchema),
+  HistoryStaking: mongoose.model("HistoryStaking", HistoryStakingSchema),
   WhitelistManager: mongoose.model("WhitelistManager", WhitelistManagerSchema),
   // pool management
   CorePoolManager: mongoose.model("CorePoolManager", UpdateCorePoolchema),
