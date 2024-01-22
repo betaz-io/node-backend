@@ -636,7 +636,9 @@ app.post("/getHistoryStaking", async (req, res) => {
     return res.send({ status: "FAILED", message: "Invalid Address" });
   }
 
-  let data = await database.HistoryStaking.find({ caller: caller });
+  let data = await database.HistoryStaking.find({ caller: caller }).sort({
+    currentTime: -1,
+  });
 
   let total = data.length;
 
