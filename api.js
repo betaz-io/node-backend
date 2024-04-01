@@ -127,6 +127,7 @@ const bodyParser = require("body-parser");
 const express = require("express");
 const nodemailer = require("nodemailer");
 const cron = require("node-cron");
+const helmet = require("helmet");
 let MobileDetect = require("mobile-detect");
 
 let fs = require("fs");
@@ -134,7 +135,6 @@ let https = require("https");
 let privateKey = fs.readFileSync("./a0bet_net.key", "utf8");
 let certificate = fs.readFileSync("./a0bet_net.crt", "utf8");
 let credentials = { key: privateKey, cert: certificate };
-
 const rateLimit = require("express-rate-limit");
 const { CRONJOB_ENABLE, CRONJOB_TIME } = require("./utils/constant.js");
 const limiter = rateLimit({
@@ -1042,6 +1042,8 @@ const connectDb = () => {
     useNewUrlParser: true,
   });
 };
+
+app.use(helmet());
 
 connectDb().then(async () => {
   // let httpsServer = https.createServer(credentials, app);
