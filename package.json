@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon api.js",
     "scan": "nodemon a0bet_events_collector.js",
+    "scan-pool": "nodemon a0bet_events_pool_collector.js",
     "auto-claim-reward": "nodemon autoScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon autoScript/autoSetCalimedStatusStaking.js",
     "auto-withdraw-hold-amount": "nodemon autoScript/autoWithdrawHoldAmount.js"
