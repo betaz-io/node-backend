@@ -7,7 +7,7 @@ let contract;
 let abi_contract;
 let defaultCaller = process.env.DEFAULT_CALLER_ADDRESS;
 
-const setBetazContract = (api, data) => {
+const setBetazTokenContract = (api, data) => {
   contract = new ContractPromise(
     api,
     data?.CONTRACT_ABI,
@@ -15,11 +15,11 @@ const setBetazContract = (api, data) => {
   );
 };
 
-const setBetazAbiContract = (data) => {
+const setBetazTokenAbiContract = (data) => {
   abi_contract = new Abi(data.CONTRACT_ABI);
 };
 
 module.exports = {
-  setBetazContract,
-  setBetazAbiContract,
+  setBetazTokenContract,
+  setBetazTokenAbiContract,
 };

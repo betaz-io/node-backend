@@ -7,7 +7,7 @@ let contract;
 let abi_contract;
 let defaultCaller = process.env.DEFAULT_CALLER_ADDRESS;
 
-const setDIACoreContract = (api, data) => {
+const setBetRandomContract = (api, data) => {
   contract = new ContractPromise(
     api,
     data?.CONTRACT_ABI,
@@ -15,7 +15,7 @@ const setDIACoreContract = (api, data) => {
   );
 };
 
-const setDIAAbiContract = (data) => {
+const setBetRandomContractAbiContract = (data) => {
   abi_contract = new Abi(data.CONTRACT_ABI);
 };
 
@@ -28,9 +28,7 @@ const getRandomNumberForRound = async function (round) {
   const value = 0;
 
   try {
-    const { result, output } = await contract.query[
-      "getRandomNumberForRound"
-    ](
+    const { result, output } = await contract.query["getRandomNumberForRound"](
       defaultCaller,
       {
         gasLimit,
@@ -51,7 +49,7 @@ const getRandomNumberForRound = async function (round) {
 };
 
 module.exports = {
-  setDIACoreContract,
-  setDIAAbiContract,
+  setBetRandomContract,
+  setBetRandomContractAbiContract,
   getRandomNumberForRound,
 };
