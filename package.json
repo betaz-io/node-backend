@@ -7,7 +7,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon api.js",
     "scan": "nodemon a0bet_events_collector.js",
-    "scan-pool": "nodemon a0bet_events_pool_collector.js",
     "auto-claim-reward": "nodemon autoScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon autoScript/autoSetCalimedStatusStaking.js",
     "auto-withdraw-hold-amount": "nodemon autoScript/autoWithdrawHoldAmount.js"
@@ -15,10 +14,11 @@
   "author": "NAD",
   "license": "ISC",
   "dependencies": {
-    "@polkadot/api": "^10.10.1",
-    "@polkadot/api-contract": "^10.10.1",
-    "@polkadot/keyring": "^12.5.1",
-    "@polkadot/util": "^12.5.1",
+    "@polkadot/api": "^9.13.6",
+    "@polkadot/api-contract": "^9.13.6",
+    "@polkadot/keyring": "^10.3.1",
+    "@polkadot/types": "^9.13.6",
+    "@polkadot/util": "^10.3.1",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.29.2",
     "assert": "^2.0.0",

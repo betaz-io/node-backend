@@ -139,6 +139,96 @@ const processEventRecords = async (eventRecords, to_scan) => {
               await database.LoseEvent.create(obj);
               console.log("added LoseEvent", obj);
             }
+          } else if (event_name == "UpdateCorePoolAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.CorePoolManager.findOne(obj);
+            if (!found) {
+              await database.CorePoolManager.create(obj);
+              console.log("added CorePoolManager", obj);
+            }
+          } else if (event_name == "UpdateRewardPoolAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.RewardPoolManager.findOne(obj);
+            if (!found) {
+              await database.RewardPoolManager.create(obj);
+              console.log("added RewardPoolManager", obj);
+            }
+          } else if (event_name == "UpdateTreasuryPoolAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.TreasuryPoolManager.findOne(obj);
+            if (!found) {
+              await database.TreasuryPoolManager.create(obj);
+              console.log("added TreasuryPoolManager", obj);
+            }
+          } else if (event_name == "UpdateStakingPoolAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.StakingPoolManager.findOne(obj);
+            if (!found) {
+              await database.StakingPoolManager.create(obj);
+              console.log("added StakingPoolManager", obj);
+            }
+          } else if (event_name == "UpdatePandoraPoolAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.PandoraPoolManager.findOne(obj);
+            if (!found) {
+              await database.PandoraPoolManager.create(obj);
+              console.log("added PandoraPoolManager", obj);
+            }
+          } else if (event_name == "UpdatePlatformFeeAmount") {
+            let obj = {
+              blockNumber: to_scan,
+              contract_address: eventValues[0],
+              caller: eventValues[1],
+              from: eventValues[2],
+              to: eventValues[3],
+              amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
+              time: eventValues[5],
+            };
+            let found = await database.PlatformFeeManager.findOne(obj);
+            if (!found) {
+              await database.PlatformFeeManager.create(obj);
+              console.log("added PlatformFeeManager", obj);
+            }
           }
 
           //console.log(to_scan,contract_address,event_name,eventValues);
