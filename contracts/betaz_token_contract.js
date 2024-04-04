@@ -5868,5 +5868,5 @@ const contract = {
 };
 
 module.exports = {
-  betaz_contract: contract[process.env.NODE_ENV],
+  betaz_token_contract: contract[process.env.NODE_ENV],
 };

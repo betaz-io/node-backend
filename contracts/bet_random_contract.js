@@ -3424,5 +3424,5 @@ const contract = {
 };
 
 module.exports = {
-  dia_contract: contract[process.env.NODE_ENV],
+  bet_random_contract: contract[process.env.NODE_ENV],
 };

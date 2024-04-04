@@ -13,7 +13,7 @@ let {
 } = require("./contracts/core_contract_calls");
 
 // DIA random contract
-let { dia_contract } = require("./contracts/bet_random_contract.js");
+let { bet_random_contract } = require("./contracts/bet_random_contract.js");
 let {
   setBetRandomContract,
   getRandomNumberForRound,
@@ -30,7 +30,7 @@ let {
 } = require("./contracts/staking_contract_calls.js");
 
 // betaz contract
-let { betaz_contract } = require("./contracts/betaz_token_contract.js");
+let { betaz_token_contract } = require("./contracts/betaz_token_contract.js");
 let { setBetazTokenContract } = require("./contracts/betaz_token_contract_calls.js");
 
 // VRFV2CONSUMER
@@ -93,13 +93,13 @@ try {
     console.log("core Contract is ready");
     betaz_core_contract = core_contract;
 
-    setBetRandomContract(api, dia_contract);
+    setBetRandomContract(api, bet_random_contract);
     console.log("DIA Contract is ready");
 
     setStakingContract(api, staking_contract);
     console.log("Staking Contract is ready");
 
-    setBetazTokenContract(api, betaz_contract);
+    setBetazTokenContract(api, betaz_token_contract);
     console.log("Betaz Contract is ready");
 
     setPadoraPoolContract(api, pandora_contract);
