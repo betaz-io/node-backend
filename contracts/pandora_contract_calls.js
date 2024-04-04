@@ -1,6 +1,6 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
 const { BN } = require("bn.js");
 require("dotenv").config();
 

@@ -1,6 +1,6 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
 
 let contract;
 let abi_contract;

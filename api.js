@@ -31,7 +31,9 @@ let {
 
 // betaz contract
 let { betaz_token_contract } = require("./contracts/betaz_token_contract.js");
-let { setBetazTokenContract } = require("./contracts/betaz_token_contract_calls.js");
+let {
+  setBetazTokenContract,
+} = require("./contracts/betaz_token_contract_calls.js");
 
 // VRFV2CONSUMER
 let { consumer_contract } = require("./contracts/pandora_random_contract.js");
@@ -40,7 +42,7 @@ let {
   getLastRequestId,
   getRequestStatus,
   requestRandomWords,
-} = require("./contracts/pandora_random.js");
+} = require("./contracts/pandora_random_contract_calls.js");
 
 // pandora contract
 let { pandora_contract } = require("./contracts/pandora_contract.js");
@@ -60,7 +62,11 @@ let {
   getPlayerByNftId,
 } = require("./contracts/pandora_contract_calls.js");
 
-let { getEstimatedGas, delay, convertTimeStampToNumber } = require("./utils");
+let {
+  getEstimatedGas,
+  delay,
+  convertTimeStampToNumber,
+} = require("./utils/utils.js");
 
 require("dotenv").config();
 
@@ -254,7 +260,6 @@ app.post("/getEventsByPlayer", async (req, res) => {
 });
 
 app.post("/getEvents", async (req, res) => {
-  debugger;
   if (!req.body) return res.send({ status: "FAILED", message: "No Input" });
   let limit = req.body.limit;
   let offset = req.body.offset;

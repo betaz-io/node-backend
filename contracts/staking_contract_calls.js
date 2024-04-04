@@ -1,7 +1,7 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
 let { hexToU8a, isHex, BN, BN_ONE } = require("@polkadot/util");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
 let { staking_contract } = require("./staking_contract");
 require("dotenv").config();
 

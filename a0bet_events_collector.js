@@ -6,7 +6,7 @@ let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
 let { numberToU8a, stringToHex } = require("@polkadot/util");
-let { send_telegram_message } = require("./utils.js");
+let { send_telegram_message } = require("./utils/utils.js");
 let { contract } = require("./contracts/core_contract.js");
 
 require("dotenv").config();
