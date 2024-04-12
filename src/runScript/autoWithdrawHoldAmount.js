@@ -11,7 +11,10 @@ const {
 } = require("../contracts/pandora_contract_calls.js");
 let { delay } = require("../utils");
 
-const socket = process.env.PROVIDER_URL;
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
+
+const socket = chainConfig.AZ_PROVIDER;
 const provider = new WsProvider(socket);
 const api = new ApiPromise({ provider, rpc: jsonrpc });
 
@@ -41,7 +44,7 @@ const connect = async () => {
 //
 const handle_withdraw = async () => {
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
   let withdrawPlayers = [];
 

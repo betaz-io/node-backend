@@ -1,12 +1,15 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils.js");
 const { BN } = require("bn.js");
 require("dotenv").config();
 
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
+
 let contract;
 let abi_contract;
-let defaultCaller = process.env.DEFAULT_CALLER_ADDRESS;
+let defaultCaller = chainConfig.POLKADOT_WALLET_ADDRESS;
 
 const setPadoraPoolContract = (api, data) => {
   contract = new ContractPromise(
@@ -25,7 +28,7 @@ const finalize = async (session_id, random_number) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(
@@ -71,7 +74,7 @@ const handle_find_winner = async (session_id, index) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(
@@ -117,7 +120,7 @@ const updateIsLocked = async (state) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(
@@ -273,7 +276,7 @@ const multipleMintTicket = async (amounts) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(
@@ -343,7 +346,7 @@ const addChainlinkRequestId = async (session_id, request_id) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(
@@ -620,7 +623,7 @@ const withdrawHoldAmount = async (receiver, amount) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   let azero_amount = new BN(amount * 10 ** 6).mul(new BN(10 ** 6)).toString();

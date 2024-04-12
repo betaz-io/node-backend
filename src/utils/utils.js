@@ -1,3 +1,4 @@
+require("dotenv").config();
 let { decodeAddress, encodeAddress } = require("@polkadot/keyring");
 let { hexToU8a, isHex, BN, BN_ONE } = require("@polkadot/util");
 let { ContractPromise } = require("@polkadot/api-contract");
@@ -6,7 +7,6 @@ let { Keyring } = require("@polkadot/api");
 const toStream = require("it-to-stream");
 let FileType = require("file-type");
 let axios = require("axios");
-require("dotenv").config();
 
 module.exports.send_telegram_message = async (message) => {
   const { data } = await axios({
@@ -165,71 +165,6 @@ module.exports.getEstimatedGas = async function (
   let ret;
   try {
     const gasLimitResult = await getGasLimit(
-      contract?.api,
-      address,
-      queryName,
-      contract,
-      { value },
-      args
-    );
-
-    if (!gasLimitResult.ok) {
-      console.log(queryName, "getEstimatedGas err", gasLimitResult.error);
-      return;
-    }
-
-    ret = gasLimitResult?.value;
-  } catch (error) {
-    console.log("error fetchGas xx>>", error.message);
-  }
-
-  return ret;
-};
-
-async function getGasLimitMultiple ( 
-  api,
-  userAddress,
-  message,
-  contract,
-  options = {},
-  args = []
-) {
-  const abiMessage = toContractAbiMessage(contract, message);
-
-  if (!abiMessage.ok) return abiMessage;
-
-  const { value, gasLimit, storageDepositLimit } = options;
-
-  const { gasRequired } = await api.call.contractsApi.call(
-    userAddress,
-    contract.address,
-    value ?? new BN(0),
-    gasLimit ?? null,
-    storageDepositLimit ?? null,
-    abiMessage.value.toU8a(args)
-  );
-
-  const refTime = gasRequired.refTime.toHuman().replaceAll(",", "");
-  const proofSize = gasRequired.proofSize.toHuman().replaceAll(",", "");
-
-  const gasRequiredAdjust = api.registry.createType("WeightV2", {
-    refTime: new BN(refTime * 10 ** 0).mul(new BN(1.5)),
-    proofSize: new BN(proofSize * 10 ** 0).mul(new BN(1.5)),
-  });
-
-  return { ok: true, value: gasRequiredAdjust };
-}
-
-module.exports.getEstimatedGasMultiple = async function (
-  address,
-  contract,
-  value,
-  queryName,
-  ...args
-) {
-  let ret;
-  try {
-    const gasLimitResult = await getGasLimitMultiple(
       contract?.api,
       address,
       queryName,

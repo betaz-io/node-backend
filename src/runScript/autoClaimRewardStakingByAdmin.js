@@ -15,14 +15,17 @@ const {
 } = require("../contracts/staking_contract_calls.js");
 let { delay } = require("../utils");
 
-const socket = process.env.PROVIDER_URL;
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
+const DATABASE_HOST = dbConfig.DB_HOST;
+const DATABASE_PORT = dbConfig.DB_PORT;
+const DATABASE_NAME = dbConfig.DB_NAME;
+
+const socket = chainConfig.AZ_PROVIDER;
 const provider = new WsProvider(socket);
 const api = new ApiPromise({ provider, rpc: jsonrpc });
 
-const DATABASE_HOST = process.env.MONGO_HOST || "127.0.0.1";
-const DATABASE_PORT = process.env.MONGO_PORT || 27017;
-const DATABASE_NAME = process.env.MONGO_DB_NAME;
-const CONNECTION_STRING = `mongodb://${DATABASE_HOST}:${DATABASE_PORT}`;
+const CONNECTION_STRING = `${dbConfig.DB_CONNECTOR}://${DATABASE_HOST}:${DATABASE_PORT}`;
 
 const connectDb = () => {
   return mongoose.connect(CONNECTION_STRING, {
@@ -57,7 +60,7 @@ const connect = async () => {
 //
 const claim_reward_by_admin = async () => {
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
   let count = 0;
   let listAddress = [];

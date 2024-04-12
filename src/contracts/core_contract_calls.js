@@ -1,10 +1,13 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils.js");
+
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
 
 let contract;
 let abi_contract;
-let defaultCaller = process.env.DEFAULT_CALLER_ADDRESS;
+let defaultCaller = chainConfig.POLKADOT_WALLET_ADDRESS;
 
 const setBetazCoreContract = (api, data) => {
   contract = new ContractPromise(
@@ -23,7 +26,7 @@ const transferAndUpdateSessionPandorapool = async (session_id) => {
   const value = 0;
 
   const keyring = new Keyring({ type: "sr25519" });
-  const PHRASE = process.env.PHRASE;
+  const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
 
   gasLimit = await getEstimatedGas(

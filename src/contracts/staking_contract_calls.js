@@ -1,13 +1,16 @@
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let { Keyring } = require("@polkadot/api");
 let { hexToU8a, isHex, BN, BN_ONE } = require("@polkadot/util");
-let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils");
+let { readOnlyGasLimit, getEstimatedGas } = require("../utils/utils.js");
 let { staking_contract } = require("./staking_contract");
 require("dotenv").config();
 
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
+
 let contract;
 let abi_contract;
-let defaultCaller = process.env.DEFAULT_CALLER_ADDRESS;
+let defaultCaller = chainConfig.POLKADOT_WALLET_ADDRESS;
 
 const setStakingContract = (api, data) => {
   contract = new ContractPromise(

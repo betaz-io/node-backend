@@ -1,19 +1,26 @@
 let mongoose = require("mongoose");
-let database = require("./database.js");
-let bs58 = require("bs58");
-let BN = require("bn.js");
 let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
-let { numberToU8a, stringToHex } = require("@polkadot/util");
-let { send_telegram_message } = require("./utils/utils.js");
-let { contract } = require("./contracts/core_contract.js");
+let { contract } = require("../contracts/core_contract.js");
 
 require("dotenv").config();
-const DATABASE_HOST = process.env.MONGO_HOST || "127.0.0.1";
-const DATABASE_PORT = process.env.MONGO_PORT || 27017;
-const DATABASE_NAME = process.env.MONGO_DB_NAME;
-const CONNECTION_STRING = `mongodb://${DATABASE_HOST}:${DATABASE_PORT}`;
+const dbConfig = require("../config/db.config.js");
+const db = require("../models/index.js");
+const ScannedBlocks = db.scannedBlocks;
+const WinEvent = db.winEvent;
+const LoseEvent = db.loseEvent;
+const CorePoolManager = db.corePoolManager;
+const StakingPoolManager = db.stakingPoolManager;
+const PandoraPoolManager = db.pandoraPoolManager;
+const TreasuryPoolManager = db.treasuryPoolManager;
+const RewardPoolManager = db.rewardPoolManager;
+const PlatformFeeManager = db.platformFeeManager;
+
+const DATABASE_HOST = dbConfig.DB_HOST;
+const DATABASE_PORT = dbConfig.DB_PORT;
+const DATABASE_NAME = dbConfig.DB_NAME;
+const CONNECTION_STRING = `${dbConfig.DB_CONNECTOR}://${DATABASE_HOST}:${DATABASE_PORT}`;
 
 const connectDb = () => {
   return mongoose.connect(CONNECTION_STRING, {
@@ -24,6 +31,7 @@ const connectDb = () => {
 
 var global_vars = {};
 var abi_contract = null;
+var api = null;
 
 const scanBlocks = async (blocknumber) => {
   if (global_vars.isScanning) {
@@ -38,14 +46,14 @@ const scanBlocks = async (blocknumber) => {
 
   try {
     //Check database to see the last checked blockNumber
-    let lastBlock_db = await database.ScannedBlocks.findOne({
+    let lastBlock_db = await ScannedBlocks.findOne({
       lastScanned: true,
     });
     let last_scanned_blocknumber = 0;
     if (lastBlock_db) {
       last_scanned_blocknumber = lastBlock_db.blockNumber;
     } else {
-      let lastBlock_db = await database.ScannedBlocks.create({
+      let lastBlock_db = await ScannedBlocks.create({
         lastScanned: true,
         blockNumber: 0,
       });
@@ -68,7 +76,7 @@ const scanBlocks = async (blocknumber) => {
       //console.log('eventRecords',eventRecords.length);
       processEventRecords(eventRecords, to_scan);
 
-      await database.ScannedBlocks.updateOne({
+      await ScannedBlocks.updateOne({
         lastScanned: true,
         blockNumber: to_scan,
       });
@@ -118,9 +126,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               reward_amount: eventValues[6] / 10 ** 12,
               oracle_round: eventValues[7],
             };
-            let found = await database.WinEvent.findOne(obj);
+            let found = await WinEvent.findOne(obj);
             if (!found) {
-              await database.WinEvent.create(obj);
+              await WinEvent.create(obj);
               console.log("added WinEvent", obj);
             }
           } else if (event_name == "LoseEvent") {
@@ -134,9 +142,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               reward_amount: eventValues[5] / 10 ** 12,
               oracle_round: eventValues[6],
             };
-            let found = await database.LoseEvent.findOne(obj);
+            let found = await LoseEvent.findOne(obj);
             if (!found) {
-              await database.LoseEvent.create(obj);
+              await LoseEvent.create(obj);
               console.log("added LoseEvent", obj);
             }
           } else if (event_name == "UpdateCorePoolAmount") {
@@ -149,9 +157,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.CorePoolManager.findOne(obj);
+            let found = await CorePoolManager.findOne(obj);
             if (!found) {
-              await database.CorePoolManager.create(obj);
+              await CorePoolManager.create(obj);
               console.log("added CorePoolManager", obj);
             }
           } else if (event_name == "UpdateRewardPoolAmount") {
@@ -164,9 +172,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.RewardPoolManager.findOne(obj);
+            let found = await RewardPoolManager.findOne(obj);
             if (!found) {
-              await database.RewardPoolManager.create(obj);
+              await RewardPoolManager.create(obj);
               console.log("added RewardPoolManager", obj);
             }
           } else if (event_name == "UpdateTreasuryPoolAmount") {
@@ -179,9 +187,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.TreasuryPoolManager.findOne(obj);
+            let found = await TreasuryPoolManager.findOne(obj);
             if (!found) {
-              await database.TreasuryPoolManager.create(obj);
+              await TreasuryPoolManager.create(obj);
               console.log("added TreasuryPoolManager", obj);
             }
           } else if (event_name == "UpdateStakingPoolAmount") {
@@ -194,9 +202,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.StakingPoolManager.findOne(obj);
+            let found = await StakingPoolManager.findOne(obj);
             if (!found) {
-              await database.StakingPoolManager.create(obj);
+              await StakingPoolManager.create(obj);
               console.log("added StakingPoolManager", obj);
             }
           } else if (event_name == "UpdatePandoraPoolAmount") {
@@ -209,9 +217,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.PandoraPoolManager.findOne(obj);
+            let found = await PandoraPoolManager.findOne(obj);
             if (!found) {
-              await database.PandoraPoolManager.create(obj);
+              await PandoraPoolManager.create(obj);
               console.log("added PandoraPoolManager", obj);
             }
           } else if (event_name == "UpdatePlatformFeeAmount") {
@@ -224,9 +232,9 @@ const processEventRecords = async (eventRecords, to_scan) => {
               amount: eventValues[4] ? eventValues[4] / 10 ** 12 : 0,
               time: eventValues[5],
             };
-            let found = await database.PlatformFeeManager.findOne(obj);
+            let found = await PlatformFeeManager.findOne(obj);
             if (!found) {
-              await database.PlatformFeeManager.create(obj);
+              await PlatformFeeManager.create(obj);
               console.log("added PlatformFeeManager", obj);
             }
           }
@@ -241,6 +249,7 @@ const processEventRecords = async (eventRecords, to_scan) => {
   });
 };
 
+mongoose.set("strictQuery", false);
 connectDb().then(async () => {
   const provider = new WsProvider("wss://ws.test.azero.dev");
   api = new ApiPromise({

@@ -35,6 +35,11 @@ const MESSAGE = {
   INPUT_ALREADY_EXIST: "Input already exist",
 };
 
+const ERROR_MESSAGE = {
+  SENDING_MAIL: "Error sending email",
+  CAN_NOT_UPDATE: "Cannot update. Maybe data was not found!"
+}
+
 const CRONJOB_TIME = {
   AZ_PANDORA_FLOW_COLLECTOR: process.env.CRONJOB_TIME_AZ_PANDORA_FLOW_COLLECTOR,
 };
@@ -69,5 +74,6 @@ module.exports = {
   CRONJOB_ENABLE: CRONJOB_ENABLE,
   CONFIG_TYPE_NAME: CONFIG_TYPE_NAME,
   SOCKET_STATUS: SOCKET_STATUS,
+  ERROR_MESSAGE: ERROR_MESSAGE,
   global_vars: global_vars,
 };

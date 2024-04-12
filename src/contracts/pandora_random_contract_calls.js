@@ -1,7 +1,10 @@
 // ETH
 const { ethers } = require("ethers");
 
-const private_key = process.env.METAMASK_PRIVATE_KEY;
+const dbConfig = require("../config/db.config.js");
+const chainConfig = require("../config/chain.config.js");
+
+const private_key = chainConfig.METAMASK_WALLET_PRIVATE_KEY;
 let contract;
 let signer;
 

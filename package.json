@@ -5,11 +5,11 @@
   "main": "a0bet.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon api.js",
-    "scan": "nodemon a0bet_events_collector.js",
-    "auto-claim-reward": "nodemon autoScript/autoClaimRewardStakingByAdmin.js",
-    "auto-set-claimed": "nodemon autoScript/autoSetCalimedStatusStaking.js",
-    "auto-withdraw-hold-amount": "nodemon autoScript/autoWithdrawHoldAmount.js"
+    "start": "nodemon app.js",
+    "scan": "nodemon src/crons/a0bet_events_collector.js",
+    "auto-claim-reward": "nodemon src/runScript/autoClaimRewardStakingByAdmin.js",
+    "auto-set-claimed": "nodemon src/runScript/autoSetCalimedStatusStaking.js",
+    "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js"
   },
   "author": "NAD",
   "license": "ISC",
@@ -36,7 +36,6 @@
     "express-rate-limit": "^6.3.0",
     "file-type": "^16.5.3",
     "fs": "0.0.1-security",
-    "helmet": "^7.1.0",
     "https": "^1.0.0",
     "ipfs": "^0.62.2",
     "ipfs-http-client": "^56.0.2",
