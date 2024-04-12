@@ -1,10 +1,12 @@
+require("dotenv").config();
+const { WebSocketServer, WebSocket } = require("ws");
+const PORT = process.env.WSS_PORT || 3010;
+const wss = new WebSocketServer({ port: PORT });
 let mongoose = require("mongoose");
 let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
 let { contract } = require("../contracts/core_contract.js");
-
-require("dotenv").config();
 const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
 const ScannedBlocks = db.scannedBlocks;
@@ -129,6 +131,7 @@ const processEventRecords = async (eventRecords, to_scan) => {
             let found = await WinEvent.findOne(obj);
             if (!found) {
               await WinEvent.create(obj);
+              sendToAll("added WinEvent", obj);
               console.log("added WinEvent", obj);
             }
           } else if (event_name == "LoseEvent") {
@@ -145,6 +148,7 @@ const processEventRecords = async (eventRecords, to_scan) => {
             let found = await LoseEvent.findOne(obj);
             if (!found) {
               await LoseEvent.create(obj);
+              sendToAll("added LoseEvent", obj);
               console.log("added LoseEvent", obj);
             }
           } else if (event_name == "UpdateCorePoolAmount") {
@@ -291,3 +295,28 @@ connectDb().then(async () => {
     console.log("error", err);
   });
 });
+
+wss.on("connection", function connection(ws) {
+  ws.on("error", console.error);
+
+  ws.on("message", function message(data) {
+    console.log("received: %s", data);
+  });
+  ws.on("close", () => {
+    console.log("WebSocket client disconnected");
+  });
+});
+
+wss.on("listening", () => {
+  console.log(`WebSocket server listening on ws://localhost:${PORT}`);
+});
+
+// wss send messages
+const sendToAll = (event, message) => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      console.log("Send message from server:", message);
+      client.send(JSON.stringify({ event: event, data: message }));
+    }
+  });
+};
