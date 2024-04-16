@@ -17,5 +17,7 @@ db.pandoraPoolManager = require("./pandoraPoolManager.model");
 db.treasuryPoolManager = require("./treasuryPoolManager.model");
 db.rewardPoolManager = require("./rewardPoolManager.model");
 db.platformFeeManager = require("./platformFeeManager.model");
+db.pandoraBetHistory = require("./pandoraBetHistory.model");
+db.pandoraYourBetHistory = require("./pandoraYourBetHistory.model");
 
 module.exports = db;
