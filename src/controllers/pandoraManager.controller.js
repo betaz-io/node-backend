@@ -123,9 +123,7 @@ exports.getPandoraYourBetHistory = async (req, res) => {
     let total = data.length;
 
     // sort
-    data.sort(
-      (a, b) => (parseInt(a.timeStamp) - parseInt(b.timeStamp)) * sort
-    );
+    data.sort((a, b) => (parseInt(a.timeStamp) - parseInt(b.timeStamp)) * sort);
 
     data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
@@ -134,6 +132,42 @@ exports.getPandoraYourBetHistory = async (req, res) => {
       ticketId: data.ticketId,
       betNumber: data.betNumber,
       timeStamp: data.timeStamp,
+    }));
+
+    return res.send({ status: STATUS.OK, ret: dataTable, total: total });
+  } catch (error) {
+    res.status(500).send({ status: STATUS.FAILED, message: error.message });
+  }
+};
+
+exports.getPandoraBetHistory = async (req, res) => {
+  try {
+    if (!req.body)
+      return res
+        .status(400)
+        .send({ status: STATUS.FAILED, message: MESSAGE.NO_INPUT });
+    let { limit, offset, sort } = req.body;
+    if (!limit) limit = 15;
+    if (!offset) offset = 0;
+    if (!sort) sort = -1;
+
+    let data = await PandoraBetHistory.find();
+
+    let total = data.length;
+
+    // sort
+    data.sort((a, b) => (parseInt(a.timeStamp) - parseInt(b.timeStamp)) * sort);
+
+    data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+
+    const dataTable = data.map((data) => ({
+      sessionId: data.sessionId,
+      chainlinkRequestId: data.chainlinkRequestId,
+      betNumberWin: data.betNumberWin,
+      rewardAmount: data.rewardAmount,
+      totalTicketWin: data.totalTicketWin,
+      playerWin: data.playerWin,
+      ticketIdWin: data.ticketIdWin?.join(", "),
     }));
 
     return res.send({ status: STATUS.OK, ret: dataTable, total: total });

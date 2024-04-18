@@ -668,6 +668,38 @@ const withdrawHoldAmount = async (receiver, amount) => {
   });
 };
 
+const getPlayerWinAmount = async function (sessionId,player) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getPlayerWinAmount"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      sessionId,
+      player
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a?.replaceAll(",", "") / 10 ** 12;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getPlayerWinAmount", " error >>", error.message);
+  }
+
+  return null;
+};
+
 module.exports = {
   setPadoraPoolContract,
   setPandoraPoolAbiContract,
@@ -689,4 +721,5 @@ module.exports = {
   getHoldPlayersByIndex,
   getHoldAmountPlayers,
   withdrawHoldAmount,
+  getPlayerWinAmount
 };
