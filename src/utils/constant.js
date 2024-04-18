@@ -67,6 +67,13 @@ let global_vars = {
   isScanning: false,
 };
 
+const STAKING_HISTORY_STATUS = {
+  STAKE: "Stake",
+  REQUEST_UNSTAKE: "Request unstake",
+  CANCEL_REQUEST_UNSTAKE: "Cancel request unstake",
+  UNSTAKE: "Unstake",
+}
+
 module.exports = {
   STATUS: STATUS,
   MESSAGE: MESSAGE,
@@ -76,4 +83,5 @@ module.exports = {
   SOCKET_STATUS: SOCKET_STATUS,
   ERROR_MESSAGE: ERROR_MESSAGE,
   global_vars: global_vars,
+  STAKING_HISTORY_STATUS: STAKING_HISTORY_STATUS
 };

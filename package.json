@@ -7,6 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon app.js",
     "scan": "nodemon src/crons/a0bet_events_collector.js",
+    "scan-staking": "nodemon src/crons/betaz_staking_events_collector.js",
+    "scan-pandora": "nodemon src/crons/betaz_pandora_events_collector.js",
     "auto-claim-reward": "nodemon src/runScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon src/runScript/autoSetCalimedStatusStaking.js",
     "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js"

@@ -105,7 +105,7 @@ const processEventRecords = async (eventRecords, to_scan) => {
       // console.log(contract_address,contract.CONTRACT_ADDRESS);
       try {
         if (contract_address == contract.CONTRACT_ADDRESS) {
-          console.log("Event from A0BET Contract...");
+          console.log("Event from BETAZ CORE Contract...");
           //console.log(phase.toString() + ' : ' + section + '.' + method + ' ' + data.toString());
           const decodedEvent = abi_contract.decodeEvent(bytes);
           let event_name = decodedEvent.event.identifier;
