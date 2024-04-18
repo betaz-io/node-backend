@@ -1,6 +1,9 @@
 const mongoose = require("mongoose");
 
 const pandoraYourBetHistorySchema = new mongoose.Schema({
+  player: {
+    type: String,
+  },
   sessionId: {
     type: Number,
   },
@@ -15,6 +18,9 @@ const pandoraYourBetHistorySchema = new mongoose.Schema({
   },
 });
 
-const PandoraYourBetHistory = mongoose.model("PandoraYourBetHistory", pandoraYourBetHistorySchema);
+const PandoraYourBetHistory = mongoose.model(
+  "PandoraYourBetHistory",
+  pandoraYourBetHistorySchema
+);
 
 module.exports = PandoraYourBetHistory;

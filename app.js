@@ -48,6 +48,11 @@ let { pandora_contract } = require("./src/contracts/pandora_contract.js");
 let {
   setPadoraPoolContract,
 } = require("./src/contracts/pandora_contract_calls.js");
+// pandora psp34 contract
+let { pandora_psp34_contract } = require("./src/contracts/pandora_psp34.js");
+let {
+  setPadoraPsp34Contract
+} = require("./src/contracts/pandora_psp34_calls.js");
 const dbConfig = require("./src/config/db.config.js");
 const chainConfig = require("./src/config/chain.config.js");
 const {
@@ -94,6 +99,7 @@ require("./src/routes/email.routes.js")(app);
 require("./src/routes/playEvent.routes.js")(app);
 require("./src/routes/stakingManager.routes.js")(app);
 require("./src/routes/saleManager.routes.js")(app);
+require("./src/routes/pandoraManager.routes.js")(app);
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
@@ -159,6 +165,9 @@ try {
 
     setPadoraPoolContract(api, pandora_contract);
     console.log("Pandora pool Contract is ready");
+
+    setPadoraPsp34Contract(api, pandora_psp34_contract);
+    console.log("Pandora psp34 Contract is ready");
 
     // connect polygon contract
     setConsumerContract(consumer_contract, polygon_provider);

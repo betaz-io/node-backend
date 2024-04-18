@@ -23,15 +23,20 @@ let {
   getBetSession,
   getIdInSessionByRandomNumberAndIndex,
   getPlayerByNftId,
+  getPlayerWinAmount,
 } = require("../contracts/pandora_contract_calls.js");
 let { delay } = require("../utils/utils.js");
 
 module.exports.pandora_cronjob = async () => runJob();
 
+const db = require("../models/index.js");
+const PandoraBetHistory = db.pandoraBetHistory;
+
 const runJob = async () => {
   // run
   try {
     let players = [];
+    let sessionData = [];
     let session_id = await getLastSessionId();
     session_id = parseInt(session_id);
     console.log({ session_id });
@@ -129,7 +134,7 @@ const runJob = async () => {
 
     bet_session = await getBetSession(session_id);
     console.log({ bet_session });
-    // random_number = 123; // test
+    random_number = 999991; // test
     if (bet_session.status == "Finalized") {
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
@@ -157,7 +162,12 @@ const runJob = async () => {
 
         if (token_id) {
           const player = await getPlayerByNftId(token_id);
-          players.push(player);
+          let obj = {
+            playerWin: player,
+            ticketIdWin: token_id?.U64,
+          };
+          console.log({ obj });
+          players.push(obj);
         }
       }
     } else console.log("Session not Completed");
@@ -173,8 +183,47 @@ const runJob = async () => {
     }
 
     // show player win
-    const win_player = Array.from(new Set(players));
-    console.log({ win_player });
+    // const win_player = Array.from(new Set(players));
+    const winData = players.reduce((acc, current) => {
+      const existingSession = acc.find(
+        (item) => item.playerWin === current.playerWin
+      );
+      if (existingSession) {
+        existingSession.ticketIdWin.push(current.ticketIdWin);
+        existingSession.totalTicketWin++;
+      } else {
+        acc.push({
+          sessionId: session_id,
+          chainlinkRequestId: lastRequestId,
+          betNumberWin: random_number,
+          playerWin: current.playerWin,
+          ticketIdWin: [current.ticketIdWin],
+          totalTicketWin: 1,
+        });
+      }
+      return acc;
+    }, []);
+    console.log({ winData });
+    if (winData.length > 0) {
+      const result = [];
+
+      for (const item of winData) {
+        const rewardAmount = await getPlayerWinAmount(
+          item.sessionId,
+          item.playerWin
+        );
+        const newItem = { ...item, rewardAmount: rewardAmount };
+        result.push(newItem);
+      }
+
+      console.log({ result });
+
+      PandoraBetHistory.insertMany(result)
+        .then(() => {
+          console.log("Success added");
+        })
+        .catch((err) => console.log({ err }));
+    }
   } catch (error) {
     console.error("Error:", error);
     console.log("Error:", error);

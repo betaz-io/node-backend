@@ -20,7 +20,7 @@ const pandoraBetHistorySchema = new mongoose.Schema({
     type: String,
   },
   ticketIdWin: {
-    type: Number,
+    type: Array,
   },
 });
 
