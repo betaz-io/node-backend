@@ -1,4 +1,5 @@
 require("dotenv").config();
+const EACH_DAY = "0 0 * * *"; // At 00:00 every day
 const EACH_HOUR = "0 * * * *"; // Every 1 hour
 const EACH_3_HOUR = "0 */3 * * *"; // Every 3 hours
 const EACH_MINUTE = "* * * * *"; // Every 1 minute
@@ -37,20 +38,31 @@ const MESSAGE = {
 
 const ERROR_MESSAGE = {
   SENDING_MAIL: "Error sending email",
-  CAN_NOT_UPDATE: "Cannot update. Maybe data was not found!"
-}
+  CAN_NOT_UPDATE: "Cannot update. Maybe data was not found!",
+};
 
 const CRONJOB_TIME = {
   AZ_PANDORA_FLOW_COLLECTOR: process.env.CRONJOB_TIME_AZ_PANDORA_FLOW_COLLECTOR,
+  EACH_MINUTE: EACH_MINUTE,
+  EACH_3_MINUTES: EACH_3_MINUTES,
+  EACH_5_MINUTES: EACH_5_MINUTES,
+  EACH_7_MINUTES: EACH_7_MINUTES,
+  EACH_DAY: EACH_DAY,
 };
 
 const CRONJOB_ENABLE = {
   AZ_PANDORA_FLOW_COLLECTOR:
     process.env.IS_ENABLE_JOB_AZ_PANDORA_FLOW_COLLECTOR == "true",
+  AZ_PANDORA_NFT_QUEUE_COLLECTOR:
+    process.env.IS_ENABLE_JOB_AZ_PANDORA_NFT_QUEUE_COLLECTOR == "true",
+  AZ_PANDORA_NFT_SCAN_ALL_COLLECTOR:
+    process.env.IS_ENABLE_JOB_AZ_PANDORA_NFT_SCAN_ALL_COLLECTOR == "true",
 };
 
 const CONFIG_TYPE_NAME = {
   AZ_PANDORA_FLOW_COLLECTOR: "CronJobAzPandoraFlowCollector",
+  AZ_PROCESSING_ALL_QUEUE_NFT: "CronJobAzProcessingQueueNft",
+  AZ_PROCESSING_ALL_NFT: "CronJobAzProcessingAllNft",
 };
 
 const SOCKET_STATUS = {
@@ -65,6 +77,8 @@ let global_vars = {
     ? process.env.DEFAULT_CALLER_ADDRESS
     : "",
   isScanning: false,
+  is_check_NFT_queue_all: false,
+  is_scan_NFT_all: false,
 };
 
 const STAKING_HISTORY_STATUS = {
@@ -72,7 +86,13 @@ const STAKING_HISTORY_STATUS = {
   REQUEST_UNSTAKE: "Request unstake",
   CANCEL_REQUEST_UNSTAKE: "Cancel request unstake",
   UNSTAKE: "Unstake",
-}
+};
+
+const CONFIG_QUEUE_SCAN = {
+  MAX_NFT_QUEUE_ALL_IN_PROCESSING: process.env.MAX_NFT_QUEUE_ALL_IN_PROCESSING
+    ? parseInt(process.env.MAX_NFT_QUEUE_ALL_IN_PROCESSING)
+    : 1000,
+};
 
 module.exports = {
   STATUS: STATUS,
@@ -83,5 +103,6 @@ module.exports = {
   SOCKET_STATUS: SOCKET_STATUS,
   ERROR_MESSAGE: ERROR_MESSAGE,
   global_vars: global_vars,
-  STAKING_HISTORY_STATUS: STAKING_HISTORY_STATUS
+  STAKING_HISTORY_STATUS: STAKING_HISTORY_STATUS,
+  CONFIG_QUEUE_SCAN: CONFIG_QUEUE_SCAN,
 };

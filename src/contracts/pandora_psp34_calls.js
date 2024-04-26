@@ -84,9 +84,38 @@ const getOwnersTokenByIndex = async function (player, index) {
   return null;
 };
 
+const getTotalNFT = async function () {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query["psp34Traits::getLastTokenId"](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getLastTokenId", " error >>", error.message);
+  }
+
+  return null;
+};
+
 module.exports = {
   setPadoraPsp34Contract,
   setPandoraPsp34AbiContract,
   getBalanceNftPlayer,
   getOwnersTokenByIndex,
+  getTotalNFT
 };

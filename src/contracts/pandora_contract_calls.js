@@ -498,6 +498,37 @@ const getIdInSessionByRandomNumberAndIndex = async function (
   return null;
 };
 
+const getNftInfo = async function (token_id) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getNftInfo"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      { u64: token_id }
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getNftInfo", " error >>", error.message);
+  }
+
+  return null;
+};
+
 const getPlayerByNftId = async function (token_id) {
   if (!contract) {
     return null;
@@ -528,6 +559,7 @@ const getPlayerByNftId = async function (token_id) {
 
   return null;
 };
+
 
 const getHoldPlayerCount = async function () {
   if (!contract) {
@@ -721,5 +753,6 @@ module.exports = {
   getHoldPlayersByIndex,
   getHoldAmountPlayers,
   withdrawHoldAmount,
-  getPlayerWinAmount
+  getPlayerWinAmount,
+  getNftInfo
 };

@@ -51,7 +51,7 @@ let {
 // pandora psp34 contract
 let { pandora_psp34_contract } = require("./src/contracts/pandora_psp34.js");
 let {
-  setPadoraPsp34Contract
+  setPadoraPsp34Contract,
 } = require("./src/contracts/pandora_psp34_calls.js");
 const dbConfig = require("./src/config/db.config.js");
 const chainConfig = require("./src/config/chain.config.js");
@@ -100,6 +100,7 @@ require("./src/routes/playEvent.routes.js")(app);
 require("./src/routes/stakingManager.routes.js")(app);
 require("./src/routes/saleManager.routes.js")(app);
 require("./src/routes/pandoraManager.routes.js")(app);
+require("./src/routes/queue.routes.js")(app);
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
