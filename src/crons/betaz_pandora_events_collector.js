@@ -9,6 +9,7 @@ const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
 const ScannedBlocks = db.scannedBlocks;
 const PandoraYourBetHistory = db.pandoraYourBetHistory;
+const PandoraRewardBetHistory = db.pandoraRewardHistory;
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
@@ -108,7 +109,6 @@ const processEventRecords = async (eventRecords, to_scan) => {
           }
 
           if (event_name == "PlayEvent") {
-            console.log({ test: JSON.parse(eventValues[2]) });
             let obj = {
               player: eventValues[1],
               sessionId: eventValues[0],
@@ -120,6 +120,18 @@ const processEventRecords = async (eventRecords, to_scan) => {
             if (!found) {
               await PandoraYourBetHistory.create(obj);
               console.log("added PandoraYourBetHistory", obj);
+            }
+          } else if (event_name == "WithdrawHoldAmountEvent") {
+            let obj = {
+              withdrawer: eventValues[0],
+              receiver: eventValues[1],
+              amount: eventValues[2] ? eventValues[2] / 10 ** 12 : 0,
+              time: new Date().getTime(),
+            };
+            let found = await PandoraRewardBetHistory.findOne(obj);
+            if (!found) {
+              await PandoraRewardBetHistory.create(obj);
+              console.log("added PandoraRewardBetHistory", obj);
             }
           }
         }

@@ -4,7 +4,10 @@ let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
 let { pandora_psp34_contract } = require("../contracts/pandora_psp34.js");
-let { setPadoraPsp34Contract } = require("../contracts/pandora_psp34_calls.js");
+let {
+  setPadoraPsp34Contract,
+  geNftOwner,
+} = require("../contracts/pandora_psp34_calls.js");
 let { pandora_contract } = require("../contracts/pandora_contract.js");
 let {
   setPadoraPoolContract,
@@ -24,6 +27,7 @@ const { CRONJOB_ENABLE, CRONJOB_TIME } = require("../utils/constant.js");
 
 const PandoraYourBetHistory = db.pandoraYourBetHistory;
 const PandoraNFTQueue = db.pandoraNFTQueue;
+const PandoraNft = db.pandoraNft;
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
@@ -61,9 +65,12 @@ const check_NFT_queue = async () => {
 
     for (const queueData of queue_data) {
       try {
-        await PandoraNFTQueue.updateById(queueData._id, {
-          isProcessing: true,
-        });
+        await PandoraNFTQueue.findOneAndUpdate(
+          { ticketId: queueData.ticketId },
+          {
+            isProcessing: true,
+          }
+        );
       } catch (e) {
         console.log(
           `${CONFIG_TYPE_NAME.AZ_PROCESSING_ALL_QUEUE_NFT} - WARNING: ${e.message}`
@@ -113,8 +120,92 @@ const check_NFT_queue = async () => {
         await PandoraNFTQueue.deleteMany({
           ticketId: ticketId,
         });
-        continue;
       }
+
+      // update nft
+      const filter = { nftId: ticketId };
+      const options = {};
+      found_NFT = await PandoraNft.findOne(filter);
+      if (!found_NFT) {
+        const [nftOwner, nftInfo] = await Promise.all([
+          getPlayerByNftId(ticketId),
+          getNftInfo(ticketId),
+        ]);
+        console.log({ nftOwner, nftInfo });
+        if (nftOwner && nftInfo) {
+          options.nftId = ticketId;
+          options.owner = nftOwner;
+          options.isUsed = nftInfo?.used;
+          options.sessionId = nftInfo?.sessionId;
+          options.betNumber = Number(nftInfo.betNumber?.replace(/\,/g, ""));
+          options.time = Number(nftInfo.time?.replace(/\,/g, ""));
+          await PandoraNft.create(options)
+            .then((data) => {
+              console.log(`added Nft successfully`);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        } else {
+          const owner = await geNftOwner(ticketId);
+          options.nftId = ticketId;
+          options.owner = owner;
+          options.isUsed = false;
+          if (owner) {
+            await PandoraNft.create(options)
+              .then((data) => {
+                console.log(`added Nft successfully`);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          }
+        }
+      } else {
+        const [nftOwner, nftInfo] = await Promise.all([
+          getPlayerByNftId(ticketId),
+          getNftInfo(ticketId),
+        ]);
+        if (nftOwner && nftInfo) {
+          options.owner = nftOwner;
+          options.isUsed = nftInfo?.used;
+          options.sessionId = nftInfo?.sessionId;
+          options.betNumber = Number(nftInfo.betNumber?.replace(/\,/g, ""));
+          options.time = Number(nftInfo.time?.replace(/\,/g, ""));
+          console.log({ found_NFT, options });
+          if (
+            options.owner !== found_NFT.owner ||
+            options.isUsed !== found_NFT.isUsed
+          ) {
+            await PandoraNft.findOneAndUpdate(filter, options)
+              .then((data) => {
+                console.log(`updated Nft successfully`);
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          }
+        } else {
+          const owner = await geNftOwner(ticketId);
+          options.owner = owner;
+          options.isUsed = false;
+          if (owner) {
+            if (
+              options.owner !== found_NFT.owner ||
+              options.isUsed !== found_NFT.isUsed
+            ) {
+              await PandoraNft.findOneAndUpdate(filter, options)
+                .then((data) => {
+                  console.log(`updated Nft successfully`);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
+            }
+          }
+        }
+      }
+
       continue;
     }
   } catch (error) {

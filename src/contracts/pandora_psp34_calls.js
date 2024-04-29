@@ -52,6 +52,35 @@ const getBalanceNftPlayer = async function (player) {
   return null;
 };
 
+const geNftOwner = async function (nftId) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query["psp34::ownerOf"](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      {u64: nftId}
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "psp34ownerOf", " error >>", error.message);
+  }
+
+  return null;
+};
+
 const getOwnersTokenByIndex = async function (player, index) {
   if (!contract) {
     return null;
@@ -117,5 +146,6 @@ module.exports = {
   setPandoraPsp34AbiContract,
   getBalanceNftPlayer,
   getOwnersTokenByIndex,
-  getTotalNFT
+  getTotalNFT,
+  geNftOwner
 };

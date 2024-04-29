@@ -98,6 +98,7 @@ const runJob = async () => {
         } else {
           random_number = parseInt(requestStatus[2][0]);
           console.log("Find random number successfully");
+          console.log({ random_number });
           session_id = parseInt(requestStatus[1]);
           console.log(
             `Get session id: ${session_id} by request id: ${lastRequestId} in chainlick contract`
@@ -116,11 +117,16 @@ const runJob = async () => {
       console.log(
         `Add request id: ${lastRequestId} to session id: ${session_id} in pandora contract`
       );
-      await addChainlinkRequestId(session_id, lastRequestId);
+      const request_id = lastRequestId?.toString();
+      console.log({ request_id });
+      const result = await addChainlinkRequestId(
+        Number(session_id),
+        request_id
+      );
 
       // get request id by session id
       let requestId = await getChainlinkRequestIdBySessionId(session_id);
-
+      console.log({ requestId });
       // get random number by request id
       const requestStatus = await getRequestStatus(requestId);
       random_number = parseInt(requestStatus[2][0]);
@@ -134,7 +140,7 @@ const runJob = async () => {
 
     bet_session = await getBetSession(session_id);
     console.log({ bet_session });
-    random_number = 999991; // test
+    // random_number = 123; // test
     if (bet_session.status == "Finalized") {
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
