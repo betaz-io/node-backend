@@ -2,7 +2,17 @@ let mongoose = require("mongoose");
 let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
 let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
+let { pandora_psp34_contract } = require("../contracts/pandora_psp34.js");
+let {
+  setPadoraPsp34Contract,
+  geNftOwner,
+} = require("../contracts/pandora_psp34_calls.js");
 let { pandora_contract } = require("../contracts/pandora_contract.js");
+let {
+  setPadoraPoolContract,
+  getPlayerByNftId,
+  getNftInfo,
+} = require("../contracts/pandora_contract_calls.js");
 
 require("dotenv").config();
 const dbConfig = require("../config/db.config.js");
@@ -10,6 +20,7 @@ const db = require("../models/index.js");
 const ScannedBlocks = db.scannedBlocks;
 const PandoraYourBetHistory = db.pandoraYourBetHistory;
 const PandoraRewardBetHistory = db.pandoraRewardHistory;
+const PandoraNft = db.pandoraNft;
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
@@ -109,10 +120,11 @@ const processEventRecords = async (eventRecords, to_scan) => {
           }
 
           if (event_name == "PlayEvent") {
+            let ticketId = eventValues[2] && JSON.parse(eventValues[2])?.u64;
             let obj = {
               player: eventValues[1],
               sessionId: eventValues[0],
-              ticketId: eventValues[2] && JSON.parse(eventValues[2])?.u64,
+              ticketId: ticketId,
               betNumber: eventValues[3] ? eventValues[3] : 0,
               timeStamp: new Date().getTime(),
             };
@@ -120,6 +132,94 @@ const processEventRecords = async (eventRecords, to_scan) => {
             if (!found) {
               await PandoraYourBetHistory.create(obj);
               console.log("added PandoraYourBetHistory", obj);
+            }
+
+            // update nft
+            const filter = { nftId: ticketId };
+            const options = {};
+            found_NFT = await PandoraNft.findOne(filter);
+            if (!found_NFT) {
+              const [nftOwner, nftInfo] = await Promise.all([
+                getPlayerByNftId(ticketId),
+                getNftInfo(ticketId),
+              ]);
+              console.log({ nftOwner, nftInfo });
+              if (nftOwner && nftInfo) {
+                options.nftId = ticketId;
+                options.owner = nftOwner;
+                options.isUsed = nftInfo?.used;
+                options.sessionId = nftInfo?.sessionId;
+                options.betNumber = Number(
+                  nftInfo.betNumber?.replace(/\,/g, "")
+                );
+                options.time = Number(nftInfo.time?.replace(/\,/g, ""));
+                await PandoraNft.create(options)
+                  .then((data) => {
+                    console.log(`added Nft successfully`);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+              } else {
+                const owner = await geNftOwner(ticketId);
+                options.nftId = ticketId;
+                options.owner = owner;
+                options.isUsed = false;
+                if (owner) {
+                  await PandoraNft.create(options)
+                    .then((data) => {
+                      console.log(`added Nft successfully`);
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                }
+              }
+            } else {
+              const [nftOwner, nftInfo] = await Promise.all([
+                getPlayerByNftId(ticketId),
+                getNftInfo(ticketId),
+              ]);
+              if (nftOwner && nftInfo) {
+                options.owner = nftOwner;
+                options.isUsed = nftInfo?.used;
+                options.sessionId = nftInfo?.sessionId;
+                options.betNumber = Number(
+                  nftInfo.betNumber?.replace(/\,/g, "")
+                );
+                options.time = Number(nftInfo.time?.replace(/\,/g, ""));
+                console.log({ found_NFT, options });
+                if (
+                  options.owner !== found_NFT.owner ||
+                  options.isUsed !== found_NFT.isUsed
+                ) {
+                  await PandoraNft.findOneAndUpdate(filter, options)
+                    .then((data) => {
+                      console.log(`updated Nft successfully`);
+                    })
+                    .catch((err) => {
+                      console.log(err);
+                    });
+                }
+              } else {
+                const owner = await geNftOwner(ticketId);
+                options.owner = owner;
+                options.isUsed = false;
+                if (owner) {
+                  if (
+                    options.owner !== found_NFT.owner ||
+                    options.isUsed !== found_NFT.isUsed
+                  ) {
+                    await PandoraNft.findOneAndUpdate(filter, options)
+                      .then((data) => {
+                        console.log(`updated Nft successfully`);
+                      })
+                      .catch((err) => {
+                        console.log(err);
+                      });
+                  }
+                }
+              }
             }
           } else if (event_name == "WithdrawHoldAmountEvent") {
             let obj = {
@@ -173,6 +273,12 @@ connectDb().then(async () => {
 
     abi_contract = new Abi(pandora_contract.CONTRACT_ABI);
     console.log("Contract ABI is ready");
+
+    setPadoraPsp34Contract(api, pandora_psp34_contract);
+    console.log("Pandora psp34 Contract is ready");
+
+    setPadoraPoolContract(api, pandora_contract);
+    console.log("Pandora pool Contract is ready");
 
     const unsubscribe = await api.rpc.chain.subscribeNewHeads((header) => {
       console.log(`Chain is at block: #${header.number}`);
