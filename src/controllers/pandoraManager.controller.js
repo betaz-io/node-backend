@@ -99,14 +99,76 @@ exports.getNftByCaller = async (req, res) => {
     data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
     // format result
-    const dataTable = data.map((data) => ({
-      nftId: data.nftId,
-      owner: data.owner,
-      isUsed: data.isUsed,
-      sessionId: data.sessionId,
-      betNumber: data.betNumber,
-      time: data.time,
-    }));
+    const dataTable = data.map((data) => {
+      let obj = {};
+      if (data.isUsed) {
+        obj.nftId = data.nftId;
+        obj.owner = data.owner;
+        obj.isUsed = data.isUsed;
+        obj.sessionId = data.sessionId;
+        obj.betNumber = data.betNumber;
+        obj.time = data.time;
+        return obj;
+      } else {
+        obj.nftId = data.nftId;
+        obj.owner = data.owner;
+        obj.isUsed = data.isUsed;
+        return obj;
+      }
+    });
+
+    return res.send({ status: STATUS.OK, ret: dataTable, total: total });
+  } catch (error) {
+    res.status(500).send({ status: STATUS.FAILED, message: error.message });
+  }
+};
+
+exports.getNftUsedByCaller = async (req, res) => {
+  try {
+    if (!req.body)
+      return res
+        .status(400)
+        .send({ status: STATUS.FAILED, message: MESSAGE.NO_INPUT });
+    let { owner, isUsed, limit, offset, sort } = req.body;
+    if (!limit) limit = 15;
+    if (!offset) offset = 0;
+    if (!sort) sort = -1;
+    if (!owner || isUsed == null) {
+      return res
+        .status(400)
+        .send({ status: STATUS.FAILED, message: MESSAGE.INVALID_ADDRESS });
+    }
+
+    const filter = {
+      owner: owner,
+      isUsed: isUsed,
+    };
+    let data = await PandoraNft.find(filter);
+
+    let total = data.length;
+
+    data.sort((a, b) => (parseInt(a.nftId) - parseInt(b.nftId)) * sort);
+
+    data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
+
+    // format result
+    let dataTable = [];
+    if (isUsed)
+      dataTable = [...data].map((data) => ({
+        nftId: data.nftId,
+        owner: data.owner,
+        isUsed: data.isUsed,
+        sessionId: data.sessionId,
+        betNumber: data.betNumber,
+        time: data.time,
+      }));
+    else {
+      dataTable = [...data].map((data) => ({
+        nftId: data.nftId,
+        owner: data.owner,
+        isUsed: data.isUsed,
+      }));
+    }
 
     return res.send({ status: STATUS.OK, ret: dataTable, total: total });
   } catch (error) {
