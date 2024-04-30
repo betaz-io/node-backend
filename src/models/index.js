@@ -20,5 +20,7 @@ db.platformFeeManager = require("./platformFeeManager.model");
 db.pandoraBetHistory = require("./pandoraBetHistory.model");
 db.pandoraYourBetHistory = require("./pandoraYourBetHistory.model");
 db.pandoraNft = require("./pandoraNft.model");
+db.pandoraNFTQueue = require("./pandoraNFTQueue.model");
+db.pandoraRewardHistory = require("./pandoraRewardHistory.model");
 
 module.exports = db;

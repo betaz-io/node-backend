@@ -9,6 +9,8 @@
     "scan": "nodemon src/crons/a0bet_events_collector.js",
     "scan-staking": "nodemon src/crons/betaz_staking_events_collector.js",
     "scan-pandora": "nodemon src/crons/betaz_pandora_events_collector.js",
+    "scan-nft-all": "nodemon src/crons/betaz_nft_scan_all_cronjob.js",
+    "scan-pandora-queue": "nodemon src/crons/betaz_pandora_your_bet_history_queue_scan_cronjob.js",
     "auto-claim-reward": "nodemon src/runScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon src/runScript/autoSetCalimedStatusStaking.js",
     "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js"

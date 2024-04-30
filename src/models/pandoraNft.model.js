@@ -2,10 +2,22 @@ const mongoose = require("mongoose");
 
 const pandoraNftSchema = new mongoose.Schema(
   {
-    player: {
+    nftId: {
+      type: Number,
+    },
+    owner: {
       type: String,
     },
-    nftId: {
+    isUsed: {
+      type: Boolean,
+    },
+    sessionId: {
+      type: Number,
+    },
+    betNumber: {
+      type: Number,
+    },
+    time: {
       type: Number,
     },
   },

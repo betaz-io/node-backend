@@ -348,6 +348,7 @@ const addChainlinkRequestId = async (session_id, request_id) => {
   const keyring = new Keyring({ type: "sr25519" });
   const PHRASE = chainConfig.POLKADOT_WALLET_PHRASE;
   const keypair = keyring.createFromUri(PHRASE);
+  console.log({caller: keypair.address, PHRASE})
 
   gasLimit = await getEstimatedGas(
     keypair.address,
@@ -355,14 +356,14 @@ const addChainlinkRequestId = async (session_id, request_id) => {
     value,
     "pandoraPoolTraits::addChainlinkRequestId",
     { u32: session_id },
-    request_id?.toString()
+    request_id
   );
 
   return new Promise((resolve, reject) => {
     contract.tx["pandoraPoolTraits::addChainlinkRequestId"](
       { gasLimit, value },
       { u32: session_id },
-      request_id?.toString()
+      request_id
     )
       .signAndSend(keypair, async ({ status, dispatchError }) => {
         if (dispatchError) {
@@ -493,6 +494,37 @@ const getIdInSessionByRandomNumberAndIndex = async function (
       " error >>",
       error.message
     );
+  }
+
+  return null;
+};
+
+const getNftInfo = async function (token_id) {
+  if (!contract) {
+    return null;
+  }
+
+  const gasLimit = readOnlyGasLimit(contract);
+  const value = 0;
+
+  try {
+    const { result, output } = await contract.query[
+      "pandoraPoolTraits::getNftInfo"
+    ](
+      defaultCaller,
+      {
+        gasLimit,
+        value,
+      },
+      { u64: token_id }
+    );
+
+    if (result.isOk) {
+      const a = output.toHuman().Ok;
+      return a;
+    }
+  } catch (error) {
+    console.log("@_@ ", "getNftInfo", " error >>", error.message);
   }
 
   return null;
@@ -668,7 +700,7 @@ const withdrawHoldAmount = async (receiver, amount) => {
   });
 };
 
-const getPlayerWinAmount = async function (sessionId,player) {
+const getPlayerWinAmount = async function (sessionId, player) {
   if (!contract) {
     return null;
   }
@@ -721,5 +753,6 @@ module.exports = {
   getHoldPlayersByIndex,
   getHoldAmountPlayers,
   withdrawHoldAmount,
-  getPlayerWinAmount
+  getPlayerWinAmount,
+  getNftInfo,
 };
