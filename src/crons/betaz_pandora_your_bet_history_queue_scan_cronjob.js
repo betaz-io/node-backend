@@ -117,9 +117,6 @@ const check_NFT_queue = async () => {
         if (!found) {
           await PandoraYourBetHistory.create(obj);
         }
-        await PandoraNFTQueue.deleteMany({
-          ticketId: ticketId,
-        });
       }
 
       // update nft
@@ -206,6 +203,9 @@ const check_NFT_queue = async () => {
         }
       }
 
+      await PandoraNFTQueue.deleteMany({
+        ticketId: ticketId,
+      });
       continue;
     }
   } catch (error) {
