@@ -80,17 +80,17 @@ exports.getNftByCaller = async (req, res) => {
       return res
         .status(400)
         .send({ status: STATUS.FAILED, message: MESSAGE.NO_INPUT });
-    let { owner, limit, offset, sort } = req.body;
+    let { caller, limit, offset, sort } = req.body;
     if (!limit) limit = 15;
     if (!offset) offset = 0;
     if (!sort) sort = -1;
-    if (!owner) {
+    if (!caller) {
       return res
         .status(400)
         .send({ status: STATUS.FAILED, message: MESSAGE.INVALID_ADDRESS });
     }
 
-    let data = await PandoraNft.find({ owner: owner });
+    let data = await PandoraNft.find({ owner: caller });
 
     let total = data.length;
 
@@ -129,18 +129,18 @@ exports.getNftUsedByCaller = async (req, res) => {
       return res
         .status(400)
         .send({ status: STATUS.FAILED, message: MESSAGE.NO_INPUT });
-    let { owner, isUsed, limit, offset, sort } = req.body;
+    let { caller, limit, offset, sort, isUsed } = req.body;
     if (!limit) limit = 15;
     if (!offset) offset = 0;
     if (!sort) sort = -1;
-    if (!owner || isUsed == null) {
+    if (!caller || isUsed == null) {
       return res
         .status(400)
         .send({ status: STATUS.FAILED, message: MESSAGE.INVALID_ADDRESS });
     }
 
     const filter = {
-      owner: owner,
+      owner: caller,
       isUsed: isUsed,
     };
     let data = await PandoraNft.find(filter);
