@@ -228,9 +228,13 @@ exports.getPandoraBetHistory = async (req, res) => {
     let data = await PandoraBetHistory.find();
 
     let total = data.length;
-
     // sort
-    data.sort((a, b) => (parseInt(a.createdAt) - parseInt(b.createdAt)) * sort);
+    data.sort(
+      (a, b) =>
+        (parseInt(new Date(a?.createdAt).getTime()) -
+          parseInt(new Date(b?.createdAt).getTime())) *
+        sort
+    );
 
     data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 
@@ -271,7 +275,7 @@ exports.getPandoraRewardHistory = async (req, res) => {
     let total = data.length;
 
     // sort
-    data.sort((a, b) => (parseInt(a.createdAt) - parseInt(b.createdAt)) * sort);
+    data.sort((a, b) => (parseInt(a.time) - parseInt(b.time)) * sort);
 
     data = data.slice(parseInt(offset), parseInt(offset) + parseInt(limit));
 

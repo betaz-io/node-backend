@@ -13,7 +13,8 @@
     "scan-pandora-queue": "nodemon src/crons/betaz_pandora_your_bet_history_queue_scan_cronjob.js",
     "auto-claim-reward": "nodemon src/runScript/autoClaimRewardStakingByAdmin.js",
     "auto-set-claimed": "nodemon src/runScript/autoSetCalimedStatusStaking.js",
-    "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js"
+    "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js",
+    "pandora-find-winner": "nodemon src/crons/betaz_pandora_flow_cronjob.js"
   },
   "author": "NAD",
   "license": "ISC",

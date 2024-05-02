@@ -55,9 +55,6 @@ let {
 } = require("./src/contracts/pandora_psp34_calls.js");
 const dbConfig = require("./src/config/db.config.js");
 const chainConfig = require("./src/config/chain.config.js");
-const {
-  pandora_cronjob,
-} = require("./src/crons/betaz_pandora_flow_cronjob.js");
 const { CRONJOB_ENABLE, CRONJOB_TIME } = require("./src/utils/constant.js");
 
 const limiter = rateLimit({
@@ -77,19 +74,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // Apply the rate limiting middleware to all requests
 app.use(limiter);
-
-// CRONJOB
-// second (optional) - minute - hour - day of month - month - day of week (7)
-if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-  cron.schedule(
-    CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-    async () => pandora_cronjob(),
-    {
-      scheduled: true,
-      timezone: "Asia/Ho_Chi_Minh",
-    }
-  );
-}
 
 // ROUTERS
 app.get("/", (req, res) => {
