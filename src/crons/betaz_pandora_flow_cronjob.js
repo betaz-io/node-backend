@@ -1,4 +1,9 @@
 require("dotenv").config();
+let mongoose = require("mongoose");
+let { ApiPromise, WsProvider } = require("@polkadot/api");
+let { ContractPromise, Abi } = require("@polkadot/api-contract");
+let jsonrpc = require("@polkadot/types/interfaces/jsonrpc");
+const { ethers } = require("ethers");
 // VRFV2CONSUMER
 let { consumer_contract } = require("../contracts/pandora_random_contract.js");
 let {
@@ -27,10 +32,32 @@ let {
 } = require("../contracts/pandora_contract_calls.js");
 let { delay } = require("../utils/utils.js");
 
-module.exports.pandora_cronjob = async () => runJob();
-
+const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
+const {
+  global_vars,
+  CONFIG_TYPE_NAME,
+} = require("../utils/constant.js");
+const { convertToUTCTime } = require("../utils/tools.js");
+const cron = require("node-cron");
+const { CRONJOB_ENABLE, CRONJOB_TIME } = require("../utils/constant.js");
+const chainConfig = require("../config/chain.config.js");
+
 const PandoraBetHistory = db.pandoraBetHistory;
+
+const DATABASE_HOST = dbConfig.DB_HOST;
+const DATABASE_PORT = dbConfig.DB_PORT;
+const DATABASE_NAME = dbConfig.DB_NAME;
+const CONNECTION_STRING = `${dbConfig.DB_CONNECTOR}://${DATABASE_HOST}:${DATABASE_PORT}`;
+
+const connectDb = () => {
+  return mongoose.connect(CONNECTION_STRING, {
+    dbName: DATABASE_NAME,
+    useNewUrlParser: true,
+  });
+};
+
+var api = null;
 
 const runJob = async () => {
   // run
@@ -44,6 +71,16 @@ const runJob = async () => {
     let total_win_amounts = await getTotalWinAmount();
     console.log({ total_win_amounts });
 
+    // check session finalized
+    console.log({
+      start: "check session finalized",
+    });
+    let session = await getBetSession(session_id);
+    console.log({ session });
+    if (session.status !== "Finalized") {
+      console.log("Session not Finalized");
+      return;
+    } 
     // pause padora pool contract
     console.log({
       step1: "Locked padora pool contract",
@@ -140,7 +177,7 @@ const runJob = async () => {
 
     bet_session = await getBetSession(session_id);
     console.log({ bet_session });
-    // random_number = 123; // test
+    random_number = 123; // test
     if (bet_session.status == "Finalized") {
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
@@ -224,7 +261,7 @@ const runJob = async () => {
 
       console.log({ result });
 
-      PandoraBetHistory.insertMany(result)
+      await PandoraBetHistory.insertMany(result)
         .then(() => {
           console.log("Success added");
         })
@@ -235,5 +272,64 @@ const runJob = async () => {
     console.log("Error:", error);
   }
 
-  console.log("Run the job every 7 days at 6am on the last day");
+  console.log({
+    end: "Run the job every 7 days at 6am on the last day",
+  });
 };
+
+// chain config
+const alephzero_socket = chainConfig.AZ_PROVIDER;
+const polygon_socket = chainConfig.ETH_PROVIDER;
+mongoose.set("strictQuery", false);
+connectDb().then(async () => {
+  const provider = new WsProvider(alephzero_socket);
+  const polygon_provider = new ethers.WebSocketProvider(polygon_socket);
+  api = new ApiPromise({
+    provider,
+    rpc: jsonrpc,
+    types: {
+      ContractsPsp34Id: {
+        _enum: {
+          U8: "u8",
+          U16: "u16",
+          U32: "u32",
+          U64: "u64",
+          U128: "u128",
+          Bytes: "Vec<u8>",
+        },
+      },
+    },
+  });
+  api.on("connected", () => {
+    api.isReady.then((api) => {
+      console.log("Testnet AZERO Connected");
+    });
+  });
+
+  api.on("ready", async () => {
+    console.log("Testnet AZERO Ready");
+    global_vars.isScanning = false;
+
+    setConsumerContract(consumer_contract, polygon_provider);
+    console.log("Consumer_contract Contract is ready");
+
+    setPadoraPoolContract(api, pandora_contract);
+    console.log("Pandora pool Contract is ready");
+
+    await runJob()
+    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+    //   cron.schedule(
+    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+    //     async () => await runJob(),
+    //     {
+    //       scheduled: true,
+    //       timezone: "Asia/Ho_Chi_Minh",
+    //     }
+    //   );
+    // }
+  });
+
+  api.on("error", (err) => {
+    console.log("error", err);
+  });
+});

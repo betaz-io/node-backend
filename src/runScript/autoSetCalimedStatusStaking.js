@@ -11,7 +11,7 @@ const {
   isClaimed,
   setStakingContract,
 } = require("../contracts/staking_contract_calls.js");
-let { delay } = require("../utils");
+const { delay } = require("../utils/utils.js");
 
 const dbConfig = require("../config/db.config.js");
 const chainConfig = require("../config/chain.config.js");

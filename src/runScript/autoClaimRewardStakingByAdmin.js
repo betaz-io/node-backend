@@ -13,10 +13,10 @@ const {
   isClaimed,
   setStakingContract,
 } = require("../contracts/staking_contract_calls.js");
-let { delay } = require("../utils");
 
 const dbConfig = require("../config/db.config.js");
 const chainConfig = require("../config/chain.config.js");
+const { delay } = require("../utils/utils.js");
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
 const DATABASE_NAME = dbConfig.DB_NAME;
