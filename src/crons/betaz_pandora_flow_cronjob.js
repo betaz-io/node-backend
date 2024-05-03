@@ -34,10 +34,7 @@ let { delay } = require("../utils/utils.js");
 
 const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
-const {
-  global_vars,
-  CONFIG_TYPE_NAME,
-} = require("../utils/constant.js");
+const { global_vars, CONFIG_TYPE_NAME } = require("../utils/constant.js");
 const { convertToUTCTime } = require("../utils/tools.js");
 const cron = require("node-cron");
 const { CRONJOB_ENABLE, CRONJOB_TIME } = require("../utils/constant.js");
@@ -80,7 +77,7 @@ const runJob = async () => {
     if (session.status !== "Finalized") {
       console.log("Session not Finalized");
       return;
-    } 
+    }
     // pause padora pool contract
     console.log({
       step1: "Locked padora pool contract",
@@ -177,7 +174,7 @@ const runJob = async () => {
 
     bet_session = await getBetSession(session_id);
     console.log({ bet_session });
-    random_number = 123; // test
+    // random_number = 123; // test
     if (bet_session.status == "Finalized") {
       await finalize(session_id, random_number).catch((error) => {
         console.error("ErrorFinalizeWinner:", error);
@@ -266,6 +263,25 @@ const runJob = async () => {
           console.log("Success added");
         })
         .catch((err) => console.log({ err }));
+    } else {
+      let obj = {
+        sessionId: session_id,
+        chainlinkRequestId: lastRequestId,
+        betNumberWin: random_number,
+        playerWin: "No winning player",
+        ticketIdWin: ["No winning tickets"],
+        totalTicketWin: 0,
+        rewardAmount: 0,
+      };
+
+      let found = await PandoraBetHistory.find(obj);
+      if (!found) {
+        await PandoraBetHistory.create(obj)
+          .then(() => {
+            console.log("Success added");
+          })
+          .catch((err) => console.log({ err }));
+      }
     }
   } catch (error) {
     console.error("Error:", error);
@@ -316,7 +332,7 @@ connectDb().then(async () => {
     setPadoraPoolContract(api, pandora_contract);
     console.log("Pandora pool Contract is ready");
 
-    await runJob()
+    await runJob();
     // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
     //   cron.schedule(
     //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
