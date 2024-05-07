@@ -31,6 +31,12 @@ let {
   getPlayerWinAmount,
 } = require("../contracts/pandora_contract_calls.js");
 let { delay } = require("../utils/utils.js");
+let { contract } = require("../contracts/core_contract.js");
+let {
+  setBetazCoreContract,
+  transferAndUpdateSessionPandorapool,
+} = require("../contracts/core_contract_calls.js");
+let { delay } = require("../utils/utils.js");
 
 const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
@@ -55,6 +61,7 @@ const connectDb = () => {
 };
 
 var api = null;
+const runTransferPandora = true;
 
 const runJob = async () => {
   // run
@@ -68,16 +75,6 @@ const runJob = async () => {
     let total_win_amounts = await getTotalWinAmount();
     console.log({ total_win_amounts });
 
-    // check session finalized
-    console.log({
-      start: "check session finalized",
-    });
-    let session = await getBetSession(session_id);
-    console.log({ session });
-    if (session.status !== "Finalized") {
-      console.log("Session not Finalized");
-      return;
-    }
     // pause padora pool contract
     console.log({
       step1: "Locked padora pool contract",
@@ -87,8 +84,29 @@ const runJob = async () => {
       await updateIsLocked(true).catch((error) => {
         console.error("ErrorChangeState:", error);
         console.log("errorChangeState", error);
+        return;
       });
     }
+
+    // check session finalized
+    console.log({
+      start: "check session finalized",
+    });
+    let session = await getBetSession(session_id);
+    console.log({ session });
+    if (session.status !== "Finalized") {
+      console.log("Session not Finalized");
+      // transfer pandora
+      console.log("Transfer pandora: ", runTransferPandora);
+      if (runTransferPandora) {
+        await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
+          console.log("ErrorTransfer:", error);
+          return;
+        });
+      }
+    }
+    session = await getBetSession(session_id);;
+    if (session.status !== "Finalized") return;
 
     // consumer contract
     console.log({ step2: "Find randomnumber with chainlink" });
@@ -101,6 +119,7 @@ const runJob = async () => {
     await requestRandomWords(session_id).catch((error) => {
       console.error("ErrorRequestRandomWords:", error);
       console.log("errorRequestRandomWords", error);
+      return;
     });
     let check_id = false;
     while (!check_id) {
@@ -332,17 +351,20 @@ connectDb().then(async () => {
     setPadoraPoolContract(api, pandora_contract);
     console.log("Pandora pool Contract is ready");
 
-    await runJob();
-    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-    //   cron.schedule(
-    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-    //     async () => await runJob(),
-    //     {
-    //       scheduled: true,
-    //       timezone: "Asia/Ho_Chi_Minh",
-    //     }
-    //   );
-    // }
+    setBetazCoreContract(api, contract);
+    console.log("Core Contract is ready");
+
+    // await runJob();
+    if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+      cron.schedule(
+        CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+        async () => await runJob(),
+        {
+          scheduled: true,
+          timezone: "Asia/Ho_Chi_Minh",
+        }
+      );
+    }
   });
 
   api.on("error", (err) => {
