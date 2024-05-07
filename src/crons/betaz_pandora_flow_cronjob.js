@@ -353,17 +353,17 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
-    await runJob();
-    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-    //   cron.schedule(
-    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-    //     async () => await runJob(),
-    //     {
-    //       scheduled: true,
-    //       timezone: "Asia/Ho_Chi_Minh",
-    //     }
-    //   );
-    // }
+    // await runJob();
+    if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+      cron.schedule(
+        CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+        async () => await runJob(),
+        {
+          scheduled: true,
+          timezone: "Asia/Ho_Chi_Minh",
+        }
+      );
+    }
   });
 
   api.on("error", (err) => {
