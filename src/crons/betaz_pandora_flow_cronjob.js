@@ -36,7 +36,6 @@ let {
   setBetazCoreContract,
   transferAndUpdateSessionPandorapool,
 } = require("../contracts/core_contract_calls.js");
-let { delay } = require("../utils/utils.js");
 
 const dbConfig = require("../config/db.config.js");
 const db = require("../models/index.js");
@@ -284,17 +283,17 @@ const runJob = async () => {
         .catch((err) => console.log({ err }));
     } else {
       let obj = {
+        ticketIdWin: ["No winning tickets"],
         sessionId: session_id,
         chainlinkRequestId: lastRequestId,
         betNumberWin: random_number,
-        playerWin: "No winning player",
-        ticketIdWin: ["No winning tickets"],
-        totalTicketWin: 0,
         rewardAmount: 0,
+        totalTicketWin: 0,
+        playerWin: "No winning player",
       };
 
       let found = await PandoraBetHistory.find(obj);
-      if (!found) {
+      if (found.length === 0) {
         await PandoraBetHistory.create(obj)
           .then(() => {
             console.log("Success added");
@@ -354,17 +353,17 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
-    // await runJob();
-    if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-      cron.schedule(
-        CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-        async () => await runJob(),
-        {
-          scheduled: true,
-          timezone: "Asia/Ho_Chi_Minh",
-        }
-      );
-    }
+    await runJob();
+    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+    //   cron.schedule(
+    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+    //     async () => await runJob(),
+    //     {
+    //       scheduled: true,
+    //       timezone: "Asia/Ho_Chi_Minh",
+    //     }
+    //   );
+    // }
   });
 
   api.on("error", (err) => {

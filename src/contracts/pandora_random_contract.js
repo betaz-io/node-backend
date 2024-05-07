@@ -2,7 +2,7 @@ require("dotenv").config();
 
 const contract = {
   testnet: {
-    CONTRACT_ADDRESS: "0x90dda5bc5717ebf932294e584fd626c8423438ba",
+    CONTRACT_ADDRESS: "0xa69865cd5f89527cfa18eb21e2190e21db124107",
     CONTRACT_ABI: {
       abi: [
         {
