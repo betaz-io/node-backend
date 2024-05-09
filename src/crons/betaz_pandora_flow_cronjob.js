@@ -49,6 +49,7 @@ const { CRONJOB_ENABLE, CRONJOB_TIME } = require("../utils/constant.js");
 const chainConfig = require("../config/chain.config.js");
 
 const PandoraBetHistory = db.pandoraBetHistory;
+const ChainLinkRequestHash = db.chainLinkRequestHash;
 
 const DATABASE_HOST = dbConfig.DB_HOST;
 const DATABASE_PORT = dbConfig.DB_PORT;
@@ -71,6 +72,10 @@ const runJob = async () => {
     let players = [];
     let sessionData = [];
     let session_id = await getLastSessionId();
+    let chainLinkRequestHashObj = {};
+    chainLinkRequestHashObj.contractAddress =
+      consumer_contract.CONTRACT_ADDRESS;
+    chainLinkRequestHashObj.networkProvider = chainConfig.ETH_PROVIDER;
     session_id = parseInt(session_id);
     console.log({ session_id });
 
@@ -118,11 +123,14 @@ const runJob = async () => {
 
     /// handle request random
     let seconds = 0;
-    await requestRandomWords(session_id).catch((error) => {
-      console.error("ErrorRequestRandomWords:", error);
-      console.log("errorRequestRandomWords", error);
-      return;
-    });
+    await requestRandomWords(session_id)
+      .then((tx) => {
+        console.log("Transaction hash:", tx.hash);
+        chainLinkRequestHashObj.txHash = tx.hash;
+      })
+      .catch((error) => {
+        console.error("Transaction failed:", error);
+      });
     let check_id = false;
     while (!check_id) {
       try {
@@ -130,6 +138,16 @@ const runJob = async () => {
         if (newRequestId !== lastRequestId) {
           check_id = true;
           lastRequestId = newRequestId;
+          chainLinkRequestHashObj.requestId = lastRequestId;
+          let found = await ChainLinkRequestHash.find({
+            requestId: lastRequestId,
+          });
+          if (!found || found?.length === 0)
+            await ChainLinkRequestHash.create(chainLinkRequestHashObj)
+              .then(() => {
+                console.log("Success added chainlink request hash");
+              })
+              .catch((err) => console.log({ err }));
         } else {
           await delay(1000);
           seconds += 1;
@@ -358,7 +376,6 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
-    // await runJob();
     if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
       cron.schedule(
         CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,

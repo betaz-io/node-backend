@@ -22,5 +22,6 @@ db.pandoraYourBetHistory = require("./pandoraYourBetHistory.model");
 db.pandoraNft = require("./pandoraNft.model");
 db.pandoraNFTQueue = require("./pandoraNFTQueue.model");
 db.pandoraRewardHistory = require("./pandoraRewardHistory.model");
+db.chainLinkRequestHash = require("./chainLinkRequestHash.model");
 
 module.exports = db;

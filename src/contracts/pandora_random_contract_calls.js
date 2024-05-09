@@ -32,7 +32,7 @@ const requestRandomWords = async function (session_id) {
 
   try {
     const tx = await contract.requestRandomWords(session_id);
-
+    return tx;
     // // Check the transaction status
     // tx.wait().then(async (receipt) => {
     //   if (receipt && receipt.status === 1) {
