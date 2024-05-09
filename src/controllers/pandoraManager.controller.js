@@ -15,6 +15,7 @@ const PandoraBetHistory = db.pandoraBetHistory;
 const PandoraYourBetHistroy = db.pandoraYourBetHistory;
 const PandoraRewardHistory = db.pandoraRewardHistory;
 const PandoraNft = db.pandoraNft;
+const ChainLinkRequestHash = db.chainLinkRequestHash;
 
 exports.updateNftByCallerAndNftId = async (req, res) => {
   try {
@@ -118,6 +119,29 @@ exports.getNftByCaller = async (req, res) => {
     });
 
     return res.send({ status: STATUS.OK, ret: dataTable, total: total });
+  } catch (error) {
+    res.status(500).send({ status: STATUS.FAILED, message: error.message });
+  }
+};
+
+exports.getHashByRequestId = async (req, res) => {
+  try {
+    if (!req.body)
+      return res
+        .status(400)
+        .send({ status: STATUS.FAILED, message: MESSAGE.NO_INPUT });
+    let { requestId } = req.body;
+    if (!requestId) {
+      return res
+        .status(400)
+        .send({ status: STATUS.FAILED, message: MESSAGE.INVALID_INPUT });
+    }
+
+    let data = await ChainLinkRequestHash.findOne({
+      requestId: requestId,
+    });
+
+    return res.send({ status: STATUS.OK, ret: data });
   } catch (error) {
     res.status(500).send({ status: STATUS.FAILED, message: error.message });
   }

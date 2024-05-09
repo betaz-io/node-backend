@@ -7,4 +7,5 @@ module.exports = function (app) {
   app.post("/getPandoraBetHistory", controller.getPandoraBetHistory);
   app.post("/getPandoraRewardHistory", controller.getPandoraRewardHistory);
   app.post("/getNftUsedByCaller", controller.getNftUsedByCaller);
+  app.post("/getHashByRequestId", controller.getHashByRequestId);
 };
