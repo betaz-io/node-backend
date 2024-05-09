@@ -1,4 +1,7 @@
 require("dotenv").config();
+const { WebSocketServer, WebSocket } = require("ws");
+const PORT = process.env.WSS_PANDORA_PORT || 3011;
+const wss = new WebSocketServer({ port: PORT });
 let mongoose = require("mongoose");
 let { ApiPromise, WsProvider } = require("@polkadot/api");
 let { ContractPromise, Abi } = require("@polkadot/api-contract");
@@ -104,7 +107,7 @@ const runJob = async () => {
         });
       }
     }
-    session = await getBetSession(session_id);;
+    session = await getBetSession(session_id);
     if (session.status !== "Finalized") return;
 
     // consumer contract
@@ -301,6 +304,8 @@ const runJob = async () => {
           .catch((err) => console.log({ err }));
       }
     }
+
+    sendToAll("Job Competed", winData);
   } catch (error) {
     console.error("Error:", error);
     console.log("Error:", error);
@@ -370,3 +375,27 @@ connectDb().then(async () => {
     console.log("error", err);
   });
 });
+
+wss.on("connection", function connection(ws) {
+  ws.on("error", console.error);
+  ws.on("message", function message(data) {
+    console.log("received: %s", data);
+  });
+  ws.on("close", () => {
+    console.log("WebSocket pandora client disconnected");
+  });
+});
+
+wss.on("listening", () => {
+  console.log(`WebSocket server listening on ws://localhost:${PORT}`);
+});
+
+// wss send messages
+const sendToAll = (event, message) => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      console.log("Send message from server:", message);
+      client.send(JSON.stringify({ event: event, data: message }));
+    }
+  });
+};
