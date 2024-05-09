@@ -23,6 +23,9 @@ const pandoraBetHistorySchema = new mongoose.Schema(
     ticketIdWin: {
       type: Array,
     },
+    txHash: {
+      type: String,
+    }
   },
   { timestamps: true }
 );

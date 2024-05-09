@@ -70,7 +70,7 @@ const runJob = async () => {
   // run
   try {
     let players = [];
-    let sessionData = [];
+    let txHash = null;
     let session_id = await getLastSessionId();
     let chainLinkRequestHashObj = {};
     chainLinkRequestHashObj.contractAddress =
@@ -126,6 +126,7 @@ const runJob = async () => {
     await requestRandomWords(session_id)
       .then((tx) => {
         console.log("Transaction hash:", tx.hash);
+        txHash = tx.hash;
         chainLinkRequestHashObj.txHash = tx.hash;
       })
       .catch((error) => {
@@ -278,6 +279,7 @@ const runJob = async () => {
           playerWin: current.playerWin,
           ticketIdWin: [current.ticketIdWin],
           totalTicketWin: 1,
+          txHash: txHash
         });
       }
       return acc;
@@ -311,6 +313,7 @@ const runJob = async () => {
         rewardAmount: 0,
         totalTicketWin: 0,
         playerWin: "No winning player",
+        txHash: txHash,
       };
 
       let found = await PandoraBetHistory.find(obj);
@@ -376,6 +379,7 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
+    // await runJob()
     if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
       cron.schedule(
         CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,

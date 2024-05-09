@@ -265,7 +265,10 @@ exports.getPandoraBetHistory = async (req, res) => {
     const dataTable = data.map((data) => ({
       sessionId: data.sessionId,
       chainlinkRequestId: data.chainlinkRequestId,
-      betNumberWin: data.betNumberWin,
+      betNumberWin: {
+        betNumberWin: data.betNumberWin,
+        txHash: data.txHash,
+      },
       rewardAmount: data.rewardAmount,
       totalTicketWin: data.totalTicketWin,
       playerWin: data.playerWin,
