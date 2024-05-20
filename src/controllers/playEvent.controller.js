@@ -149,3 +149,52 @@ exports.getRareWins = async (req, res) => {
     res.status(500).send({ status: STATUS.FAILED, message: error.message });
   }
 };
+
+exports.statistic = async (req, res) => {
+  try {
+    let winData = await WinEvent.find();
+    let loseData = await LoseEvent.find();
+    let result = winData.concat(loseData);
+
+    // total player
+    const playersArray = result.map((record) => record.player);
+    const uniquePlayersSet = new Set(playersArray);
+    const uniquePlayersArray = Array.from(uniquePlayersSet);
+    const totalPlayers = uniquePlayersArray.length;
+
+    // total reward
+    const totalBetAmount = result.reduce(
+      (total, record) => total + record.bet_amount,
+      0
+    );
+
+    // total win amount
+    const totalWinAmount = winData.reduce(
+      (total, record) => total + record.win_amount,
+      0
+    );
+
+    const winRate = (winData.length / result.length) * 100;
+    const loseRate = 100 - winRate;
+
+    // total bet amount
+    const totalRewardAmount = result.reduce(
+      (total, record) => total + record.reward_amount,
+      0
+    );
+
+    const statistics = {
+      totalPlayers,
+      totalBetAmount,
+      totalRewardAmount,
+      totalWinAmount,
+      winRate,
+      loseRate,
+    };
+
+    // console.log(statistics);
+    res.json(statistics);
+  } catch (error) {
+    res.status(500).send({ status: STATUS.FAILED, message: error.message });
+  }
+}
