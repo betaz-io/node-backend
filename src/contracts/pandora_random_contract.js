@@ -353,7 +353,7 @@ const contract = {
     },
   },
   mainnet: {
-    CONTRACT_ADDRESS: "0x79244D5E647610Af10568727B26f7755285ca5cD",
+    CONTRACT_ADDRESS: "0xa69865cd5f89527cfa18eb21e2190e21db124107",
     CONTRACT_ABI: {
       abi: [
         {
