@@ -5,22 +5,29 @@
   "main": "a0bet.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon api.js",
-    "scan": "nodemon a0bet_events_collector.js",
-    "auto-claim-reward": "nodemon autoScript/autoClaimRewardStakingByAdmin.js",
-    "auto-set-claimed": "nodemon autoScript/autoSetCalimedStatusStaking.js",
-    "auto-withdraw-hold-amount": "nodemon autoScript/autoWithdrawHoldAmount.js"
+    "start": "nodemon app.js",
+    "scan": "nodemon src/crons/a0bet_events_collector.js",
+    "scan-staking": "nodemon src/crons/betaz_staking_events_collector.js",
+    "scan-pandora": "nodemon src/crons/betaz_pandora_events_collector.js",
+    "scan-nft-all": "nodemon src/crons/betaz_nft_scan_all_cronjob.js",
+    "scan-pandora-queue": "nodemon src/crons/betaz_pandora_your_bet_history_queue_scan_cronjob.js",
+    "auto-claim-reward": "nodemon src/runScript/autoClaimRewardStakingByAdmin.js",
+    "auto-set-claimed": "nodemon src/runScript/autoSetCalimedStatusStaking.js",
+    "auto-withdraw-hold-amount": "nodemon src/runScript/autoWithdrawHoldAmount.js",
+    "pandora-find-winner": "nodemon src/crons/betaz_pandora_flow_cronjob.js"
   },
   "author": "NAD",
   "license": "ISC",
   "dependencies": {
-    "@polkadot/api": "^10.10.1",
-    "@polkadot/api-contract": "^10.10.1",
-    "@polkadot/keyring": "^12.5.1",
-    "@polkadot/util": "^12.5.1",
+    "@polkadot/api": "^9.13.6",
+    "@polkadot/api-contract": "^9.13.6",
+    "@polkadot/keyring": "^10.3.1",
+    "@polkadot/types": "^9.13.6",
+    "@polkadot/util": "^10.3.1",
     "@solana/spl-token": "^0.1.8",
     "@solana/web3.js": "^1.29.2",
     "assert": "^2.0.0",
+    "axios": "^1.6.8",
     "bn.js": "^5.2.0",
     "body-parser": "^1.19.1",
     "bs58": "^4.0.1",
@@ -47,6 +54,7 @@
     "pm2": "^5.1.2",
     "save-file-by-url": "^0.4.2",
     "sharp": "^0.30.4",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "ws": "^8.16.0"
   }
 }
