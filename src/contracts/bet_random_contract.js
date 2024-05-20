@@ -1712,10 +1712,10 @@ const contract = {
     },
   },
   mainnet: {
-    CONTRACT_ADDRESS: "5EVDSMuCWJJG63Ur2Qgof37irkxPcxeMGgUm1uh8nvHYLpXe",
+    CONTRACT_ADDRESS: "5EmuqGSvF6z4uyAZ6Wg7LMqtmpczyypzoqiKhtdWiDwSMEjw",
     CONTRACT_ABI: {
       source: {
-        hash: "0x68bac76936d993a8a816802908905af7922c8a8c6fee5d2bd72f634964851daf",
+        hash: "0x79ca72bcfc00121c69850033c2ca2094c5fb6db9787f17742bcce7eca5cc8847",
         language: "ink! 4.3.0",
         compiler: "rustc 1.75.0-nightly",
         build_info: {
@@ -2583,13 +2583,17 @@ const contract = {
                     name: "ChainlinkRequestIdIsExists",
                   },
                   {
+                    index: 73,
+                    name: "CannotUpdateSession",
+                  },
+                  {
                     fields: [
                       {
                         type: 11,
                         typeName: "OwnableError",
                       },
                     ],
-                    index: 73,
+                    index: 74,
                     name: "OwnableError",
                   },
                   {
@@ -2599,7 +2603,7 @@ const contract = {
                         typeName: "AccessControlError",
                       },
                     ],
-                    index: 74,
+                    index: 75,
                     name: "AccessControlError",
                   },
                   {
@@ -2609,7 +2613,7 @@ const contract = {
                         typeName: "PSP22Error",
                       },
                     ],
-                    index: 75,
+                    index: 76,
                     name: "PSP22Error",
                   },
                   {
@@ -2619,7 +2623,7 @@ const contract = {
                         typeName: "PSP34Error",
                       },
                     ],
-                    index: 76,
+                    index: 77,
                     name: "PSP34Error",
                   },
                   {
@@ -2629,12 +2633,16 @@ const contract = {
                         typeName: "PausableError",
                       },
                     ],
-                    index: 77,
+                    index: 78,
                     name: "PausableError",
                   },
                   {
-                    index: 78,
+                    index: 79,
                     name: "CheckedOperations",
+                  },
+                  {
+                    index: 80,
+                    name: "CannotRandomAmounts",
                   },
                 ],
               },
