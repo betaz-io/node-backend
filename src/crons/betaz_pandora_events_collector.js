@@ -128,7 +128,7 @@ const processEventRecords = async (eventRecords, to_scan) => {
               betNumber: eventValues[3] ? eventValues[3] : 0,
               timeStamp: new Date().getTime(),
             };
-            let found = await PandoraYourBetHistory.findOne(obj);
+            let found = await PandoraYourBetHistory.findOne({ticketId: obj.ticketId});
             if (!found) {
               await PandoraYourBetHistory.create(obj);
               console.log("added PandoraYourBetHistory", obj);
