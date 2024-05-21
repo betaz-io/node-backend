@@ -85,7 +85,7 @@ const scan_all_NFT = async () => {
             betNumber: Number(nftIdInfo.betNumber?.replace(/\,/g, "")),
             timeStamp: Number(nftIdInfo.time?.replace(/\,/g, "")),
           };
-          let found = await PandoraYourBetHistory.findOne(obj);
+          let found = await PandoraYourBetHistory.findOne({ticketId: obj.ticketId});
           if (!found) {
             await PandoraYourBetHistory.create(obj);
           }

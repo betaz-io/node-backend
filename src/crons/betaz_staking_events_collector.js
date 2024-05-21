@@ -115,7 +115,15 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             currentTime: new Date().getTime(),
                             status: STAKING_HISTORY_STATUS.STAKE,
                         };
-                        let found = await HistoryStaking.findOne(obj);
+                        let found = await HistoryStaking.findOne({
+                            caller: obj.caller,
+                            amount: obj.amount,
+                            status: obj.status,
+                            currentTime: {
+                              $gte: new Date(obj.currentTime - 20000),
+                              $lte: new Date(obj.currentTime + 10000)
+                            }
+                          });
                         if (!found) {
                             await HistoryStaking.create(obj);
                             console.log("added historyStaking", obj);
@@ -127,7 +135,15 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             currentTime: new Date().getTime(),
                             status: STAKING_HISTORY_STATUS.REQUEST_UNSTAKE,
                         };
-                        let found = await HistoryStaking.findOne(obj);
+                        let found = await HistoryStaking.findOne({
+                            caller: obj.caller,
+                            amount: obj.amount,
+                            status: obj.status,
+                            currentTime: {
+                              $gte: new Date(obj.currentTime - 20000),
+                              $lte: new Date(obj.currentTime + 10000)
+                            }
+                          });
                         if (!found) {
                             await HistoryStaking.create(obj);
                             console.log("added historyStaking", obj);
@@ -139,7 +155,15 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             currentTime: new Date().getTime(),
                             status: STAKING_HISTORY_STATUS.CANCEL_REQUEST_UNSTAKE,
                         };
-                        let found = await HistoryStaking.findOne(obj);
+                        let found = await HistoryStaking.findOne({
+                            caller: obj.caller,
+                            amount: obj.amount,
+                            status: obj.status,
+                            currentTime: {
+                              $gte: new Date(obj.currentTime - 20000),
+                              $lte: new Date(obj.currentTime + 10000)
+                            }
+                          });
                         if (!found) {
                             await HistoryStaking.create(obj);
                             console.log("added historyStaking", obj);
@@ -151,7 +175,15 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             currentTime: new Date().getTime(),
                             status: STAKING_HISTORY_STATUS.UNSTAKE,
                         };
-                        let found = await HistoryStaking.findOne(obj);
+                        let found = await HistoryStaking.findOne({
+                            caller: obj.caller,
+                            amount: obj.amount,
+                            status: obj.status,
+                            currentTime: {
+                              $gte: new Date(obj.currentTime - 20000),
+                              $lte: new Date(obj.currentTime + 10000)
+                            }
+                          });
                         if (!found) {
                             await HistoryStaking.create(obj);
                             console.log("added historyStaking", obj);
