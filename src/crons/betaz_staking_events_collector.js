@@ -120,8 +120,8 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             amount: obj.amount,
                             status: obj.status,
                             currentTime: {
-                              $gte: new Date(obj.currentTime - 20000),
-                              $lte: new Date(obj.currentTime + 10000)
+                              $gte: new Date(obj.currentTime - 12000),
+                              $lte: new Date(obj.currentTime)
                             }
                           });
                         if (!found) {
@@ -140,8 +140,8 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             amount: obj.amount,
                             status: obj.status,
                             currentTime: {
-                              $gte: new Date(obj.currentTime - 20000),
-                              $lte: new Date(obj.currentTime + 10000)
+                              $gte: new Date(obj.currentTime - 12000),
+                              $lte: new Date(obj.currentTime)
                             }
                           });
                         if (!found) {
@@ -160,8 +160,8 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             amount: obj.amount,
                             status: obj.status,
                             currentTime: {
-                              $gte: new Date(obj.currentTime - 20000),
-                              $lte: new Date(obj.currentTime + 10000)
+                              $gte: new Date(obj.currentTime - 12000),
+                              $lte: new Date(obj.currentTime)
                             }
                           });
                         if (!found) {
@@ -180,8 +180,8 @@ const processEventRecords = async (eventRecords, to_scan) => {
                             amount: obj.amount,
                             status: obj.status,
                             currentTime: {
-                              $gte: new Date(obj.currentTime - 20000),
-                              $lte: new Date(obj.currentTime + 10000)
+                              $gte: new Date(obj.currentTime - 12000),
+                              $lte: new Date(obj.currentTime)
                             }
                           });
                         if (!found) {
