@@ -112,6 +112,7 @@ const runJob = async () => {
         });
       }
     }
+    await delay(3000)
     session = await getBetSession(session_id);
     if (session.status !== "Finalized") return;
 
