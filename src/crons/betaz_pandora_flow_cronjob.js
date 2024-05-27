@@ -41,6 +41,8 @@ let {
 } = require("../contracts/core_contract_calls.js");
 
 const dbConfig = require("../config/db.config.js");
+
+/**Database config */
 const db = require("../models/index.js");
 const { global_vars, CONFIG_TYPE_NAME } = require("../utils/constant.js");
 const { convertToUTCTime } = require("../utils/tools.js");
@@ -56,6 +58,20 @@ const DATABASE_PORT = dbConfig.DB_PORT;
 const DATABASE_NAME = dbConfig.DB_NAME;
 const CONNECTION_STRING = `${dbConfig.DB_CONNECTOR}://${DATABASE_HOST}:${DATABASE_PORT}`;
 
+/**Chain config */
+const alephzero_socket = chainConfig.AZ_PROVIDER;
+const eth_socket = chainConfig.ETH_PROVIDER;
+const metamask_private_key = chainConfig.METAMASK_WALLET_PRIVATE_KEY;
+
+/**Variable config */
+// substrate api
+let api = null;
+// ethers api
+let pandora_random_contract = null;
+// is run transfer
+const runTransferPandora = true;
+
+/**Job */
 const connectDb = () => {
   return mongoose.connect(CONNECTION_STRING, {
     dbName: DATABASE_NAME,
@@ -63,12 +79,10 @@ const connectDb = () => {
   });
 };
 
-var api = null;
-const runTransferPandora = true;
-
 const runJob = async () => {
   // run
   try {
+    /** init variable */
     let players = [];
     let txHash = null;
     let session_id = await getLastSessionId();
@@ -79,6 +93,7 @@ const runJob = async () => {
     session_id = parseInt(session_id);
     console.log({ session_id });
 
+    /** */
     let total_win_amounts = await getTotalWinAmount();
     console.log({ total_win_amounts });
 
@@ -112,19 +127,19 @@ const runJob = async () => {
         });
       }
     }
-    await delay(3000)
+    await delay(3000);
     session = await getBetSession(session_id);
     if (session.status !== "Finalized") return;
 
     // consumer contract
     console.log({ step2: "Find randomnumber with chainlink" });
     /// get last request id
-    let lastRequestId = await getLastRequestId();
+    let lastRequestId = await pandora_random_contract.lastRequestId();
     console.log({ lastRequestId });
 
     /// handle request random
     let seconds = 0;
-    await requestRandomWords(session_id)
+    await pandora_random_contract.requestRandomWords(session_id)
       .then((tx) => {
         console.log("Transaction hash:", tx.hash);
         txHash = tx.hash;
@@ -136,7 +151,7 @@ const runJob = async () => {
     let check_id = false;
     while (!check_id) {
       try {
-        const newRequestId = await getLastRequestId();
+        const newRequestId = await pandora_random_contract.lastRequestId();
         if (newRequestId !== lastRequestId) {
           check_id = true;
           lastRequestId = newRequestId;
@@ -165,7 +180,7 @@ const runJob = async () => {
     let random_number = false;
     while (!random_number) {
       try {
-        const requestStatus = await getRequestStatus(lastRequestId);
+        const requestStatus = await pandora_random_contract.getRequestStatus(lastRequestId);
         if (requestStatus[2].length === 0) {
           await delay(1000);
           seconds += 1;
@@ -203,7 +218,7 @@ const runJob = async () => {
       let requestId = await getChainlinkRequestIdBySessionId(session_id);
       console.log({ requestId });
       // get random number by request id
-      const requestStatus = await getRequestStatus(requestId);
+      const requestStatus = await pandora_random_contract.getRequestStatus(requestId);
       random_number = parseInt(requestStatus[2][0]);
       console.log({ session_id, requestId, random_number });
     } else console.log("Session not Finalized");
@@ -280,7 +295,7 @@ const runJob = async () => {
           playerWin: current.playerWin,
           ticketIdWin: [current.ticketIdWin],
           totalTicketWin: 1,
-          txHash: txHash
+          txHash: txHash,
         });
       }
       return acc;
@@ -338,13 +353,10 @@ const runJob = async () => {
   });
 };
 
-// chain config
-const alephzero_socket = chainConfig.AZ_PROVIDER;
-const polygon_socket = chainConfig.ETH_PROVIDER;
 mongoose.set("strictQuery", false);
 connectDb().then(async () => {
   const provider = new WsProvider(alephzero_socket);
-  const polygon_provider = new ethers.WebSocketProvider(polygon_socket);
+  const ethers_provider = new ethers.WebSocketProvider(eth_socket)
   api = new ApiPromise({
     provider,
     rpc: jsonrpc,
@@ -371,8 +383,13 @@ connectDb().then(async () => {
     console.log("Testnet AZERO Ready");
     global_vars.isScanning = false;
 
-    setConsumerContract(consumer_contract, polygon_provider);
-    console.log("Consumer_contract Contract is ready");
+    const ethers_signer = new ethers.Wallet(metamask_private_key, ethers_provider);
+    pandora_random_contract = new ethers.Contract(
+      consumer_contract.CONTRACT_ADDRESS,
+      consumer_contract.CONTRACT_ABI.abi,
+      ethers_signer
+    );
+    console.log("Pandora_random_contract Contract is ready");
 
     setPadoraPoolContract(api, pandora_contract);
     console.log("Pandora pool Contract is ready");
@@ -380,17 +397,17 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
-    // await runJob()
-    if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-      cron.schedule(
-        CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-        async () => await runJob(),
-        {
-          scheduled: true,
-          timezone: "Asia/Ho_Chi_Minh",
-        }
-      );
-    }
+    await runJob()
+    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+    //   cron.schedule(
+    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+    //     async () => await runJob(),
+    //     {
+    //       scheduled: true,
+    //       timezone: "Asia/Ho_Chi_Minh",
+    //     }
+    //   );
+    // }
   });
 
   api.on("error", (err) => {

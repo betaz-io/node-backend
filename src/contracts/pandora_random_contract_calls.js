@@ -21,8 +21,8 @@ const getLastRequestId = async function () {
   if (!contract) {
     return null;
   }
-
-  return await contract.lastRequestId();
+  const query = await contract.lastRequestId();
+  return query;
 };
 
 const requestRandomWords = async function (session_id) {
@@ -51,7 +51,8 @@ const getRequestStatus = async function (requestId) {
     return null;
   }
 
-  return await contract.getRequestStatus(requestId);
+  const query = await contract.getRequestStatus(requestId);
+  return query;
 };
 
 module.exports = {
