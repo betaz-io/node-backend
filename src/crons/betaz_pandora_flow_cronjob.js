@@ -139,7 +139,8 @@ const runJob = async () => {
 
     /// handle request random
     let seconds = 0;
-    await pandora_random_contract.requestRandomWords(session_id)
+    await pandora_random_contract
+      .requestRandomWords(session_id)
       .then((tx) => {
         console.log("Transaction hash:", tx.hash);
         txHash = tx.hash;
@@ -180,7 +181,9 @@ const runJob = async () => {
     let random_number = false;
     while (!random_number) {
       try {
-        const requestStatus = await pandora_random_contract.getRequestStatus(lastRequestId);
+        const requestStatus = await pandora_random_contract.getRequestStatus(
+          lastRequestId
+        );
         if (requestStatus[2].length === 0) {
           await delay(1000);
           seconds += 1;
@@ -218,7 +221,9 @@ const runJob = async () => {
       let requestId = await getChainlinkRequestIdBySessionId(session_id);
       console.log({ requestId });
       // get random number by request id
-      const requestStatus = await pandora_random_contract.getRequestStatus(requestId);
+      const requestStatus = await pandora_random_contract.getRequestStatus(
+        requestId
+      );
       random_number = parseInt(requestStatus[2][0]);
       console.log({ session_id, requestId, random_number });
     } else console.log("Session not Finalized");
@@ -356,7 +361,7 @@ const runJob = async () => {
 mongoose.set("strictQuery", false);
 connectDb().then(async () => {
   const provider = new WsProvider(alephzero_socket);
-  const ethers_provider = new ethers.WebSocketProvider(eth_socket)
+  const ethers_provider = new ethers.WebSocketProvider(eth_socket);
   api = new ApiPromise({
     provider,
     rpc: jsonrpc,
@@ -383,7 +388,10 @@ connectDb().then(async () => {
     console.log("Testnet AZERO Ready");
     global_vars.isScanning = false;
 
-    const ethers_signer = new ethers.Wallet(metamask_private_key, ethers_provider);
+    const ethers_signer = new ethers.Wallet(
+      metamask_private_key,
+      ethers_provider
+    );
     pandora_random_contract = new ethers.Contract(
       consumer_contract.CONTRACT_ADDRESS,
       consumer_contract.CONTRACT_ABI.abi,
@@ -397,17 +405,17 @@ connectDb().then(async () => {
     setBetazCoreContract(api, contract);
     console.log("Core Contract is ready");
 
-    await runJob()
-    // if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
-    //   cron.schedule(
-    //     CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
-    //     async () => await runJob(),
-    //     {
-    //       scheduled: true,
-    //       timezone: "Asia/Ho_Chi_Minh",
-    //     }
-    //   );
-    // }
+    // await runJob();
+    if (CRONJOB_ENABLE.AZ_PANDORA_FLOW_COLLECTOR) {
+      cron.schedule(
+        CRONJOB_TIME.AZ_PANDORA_FLOW_COLLECTOR,
+        async () => await runJob(),
+        {
+          scheduled: true,
+          timezone: "Asia/Ho_Chi_Minh",
+        }
+      );
+    }
   });
 
   api.on("error", (err) => {
