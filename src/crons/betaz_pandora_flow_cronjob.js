@@ -81,25 +81,40 @@ const connectDb = () => {
 
 const runJob = async () => {
   // run
+  console.log({
+    Status: "Job Started",
+  });
+
   try {
-    /** init variable */
+    /** INIT VARIABLE */
     let players = [];
     let txHash = null;
-    let session_id = await getLastSessionId();
     let chainLinkRequestHashObj = {};
     chainLinkRequestHashObj.contractAddress =
       consumer_contract.CONTRACT_ADDRESS;
     chainLinkRequestHashObj.networkProvider = chainConfig.ETH_PROVIDER;
+
+    let session_id = await getLastSessionId();
     session_id = parseInt(session_id);
-    console.log({ session_id });
-
-    /** */
     let total_win_amounts = await getTotalWinAmount();
-    console.log({ total_win_amounts });
+    console.log({ session_id, total_win_amounts });
 
-    // pause padora pool contract
+    /** INIT PADORA RANDOM CONTRACT */
+    const ethers_provider = new ethers.WebSocketProvider(eth_socket);
+    const ethers_signer = new ethers.Wallet(
+      metamask_private_key,
+      ethers_provider
+    );
+    pandora_random_contract = new ethers.Contract(
+      consumer_contract.CONTRACT_ADDRESS,
+      consumer_contract.CONTRACT_ABI.abi,
+      ethers_signer
+    );
+    console.log("Pandora_random_contract Contract is ready");
+
+    /** STEP 1 */
     console.log({
-      step1: "Locked padora pool contract",
+      "Step 1": "Locked padora pool contract",
     });
     let is_locked = await getIsLocked();
     if (!is_locked) {
@@ -110,34 +125,13 @@ const runJob = async () => {
       });
     }
 
-    // check session finalized
-    console.log({
-      start: "check session finalized",
-    });
-    let session = await getBetSession(session_id);
-    console.log({ session });
-    if (session.status !== "Finalized") {
-      console.log("Session not Finalized");
-      // transfer pandora
-      console.log("Transfer pandora: ", runTransferPandora);
-      if (runTransferPandora) {
-        await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
-          console.log("ErrorTransfer:", error);
-          return;
-        });
-      }
-    }
-    await delay(3000);
-    session = await getBetSession(session_id);
-    if (session.status !== "Finalized") return;
-
-    // consumer contract
-    console.log({ step2: "Find randomnumber with chainlink" });
-    /// get last request id
+    /** STEP 2 */
+    console.log({ "Step 2": "Find randomnumber with chainlink" });
+    // Get last request id
     let lastRequestId = await pandora_random_contract.lastRequestId();
     console.log({ lastRequestId });
 
-    /// handle request random
+    // Handle request random
     let seconds = 0;
     await pandora_random_contract
       .requestRandomWords(session_id)
@@ -177,7 +171,7 @@ const runJob = async () => {
       }
     }
 
-    /// find random number
+    // Find random number
     let random_number = false;
     while (!random_number) {
       try {
@@ -194,7 +188,7 @@ const runJob = async () => {
           console.log({ random_number });
           session_id = parseInt(requestStatus[1]);
           console.log(
-            `Get session id: ${session_id} by request id: ${lastRequestId} in chainlick contract`
+            `Get session id: ${session_id} by request id: ${lastRequestId} in chainlink contract`
           );
         }
       } catch (err) {
@@ -203,12 +197,33 @@ const runJob = async () => {
       }
     }
 
-    // Add request id to bet session
+    /** STEP 3 */
+    console.log({
+      "Step 3": `Check session ${session_id} is finalized`,
+    });
+    let session = await getBetSession(session_id);
+    console.log({ session });
+    if (session.status !== "Finalized") {
+      console.log("Session not Finalized");
+      // transfer pandora
+      console.log("Transfer pandora: ", runTransferPandora);
+      if (runTransferPandora) {
+        await transferAndUpdateSessionPandorapool(session_id).catch((error) => {
+          console.log("ErrorTransfer:", error);
+          return;
+        });
+      }
+    }
+    session = await getBetSession(session_id);
+    if (session.status !== "Finalized") return;
+
+    /** STEP 4 */
+    console.log({ "Step 4": "Add request id to bet session" });
     let bet_session = await getBetSession(session_id);
     console.log({ bet_session });
     if (bet_session.status == "Finalized") {
       console.log(
-        `Add request id: ${lastRequestId} to session id: ${session_id} in pandora contract`
+        `Add request id ${lastRequestId} to session ${session_id} in pandora contract`
       );
       const request_id = lastRequestId?.toString();
       console.log({ request_id });
@@ -226,11 +241,11 @@ const runJob = async () => {
       );
       random_number = parseInt(requestStatus[2][0]);
       console.log({ session_id, requestId, random_number });
-    } else console.log("Session not Finalized");
+    } else console.log(`Session ${session_id} not Finalized`);
 
-    // handle finalize
+    /** STEP 5 */
     console.log({
-      step3: "finalize",
+      "Step 5": "Handle finalize",
     });
 
     bet_session = await getBetSession(session_id);
@@ -241,7 +256,7 @@ const runJob = async () => {
         console.error("ErrorFinalizeWinner:", error);
         console.log("errorFinalizeWinner", error);
       });
-    } else console.log("Session not Finalized");
+    } else console.log(`Session ${session_id} not Finalized`);
 
     // find winner
     console.log({ step4: "Find winner" });
@@ -271,10 +286,10 @@ const runJob = async () => {
           players.push(obj);
         }
       }
-    } else console.log("Session not Completed");
+    } else console.log(`Session ${session_id} not Completed`);
 
-    // unlock padora pool contract
-    console.log({ step5: "Open padora pool contract" });
+    /** STEP 6 */
+    console.log({ "Step 6": "Open padora pool contract" });
     is_locked = await getIsLocked();
     if (is_locked) {
       await updateIsLocked(false).catch((error) => {
@@ -283,6 +298,8 @@ const runJob = async () => {
       });
     }
 
+    /** STEP 7 */
+    console.log({ "Step 7": "Handle data" });
     // show player win
     // const win_player = Array.from(new Set(players));
     const winData = players.reduce((acc, current) => {
@@ -354,14 +371,13 @@ const runJob = async () => {
   }
 
   console.log({
-    end: "Run the job every 7 days at 6am on the last day",
+    Status: "Job ended",
   });
 };
 
 mongoose.set("strictQuery", false);
 connectDb().then(async () => {
   const provider = new WsProvider(alephzero_socket);
-  const ethers_provider = new ethers.WebSocketProvider(eth_socket);
   api = new ApiPromise({
     provider,
     rpc: jsonrpc,
@@ -387,17 +403,6 @@ connectDb().then(async () => {
   api.on("ready", async () => {
     console.log("Testnet AZERO Ready");
     global_vars.isScanning = false;
-
-    const ethers_signer = new ethers.Wallet(
-      metamask_private_key,
-      ethers_provider
-    );
-    pandora_random_contract = new ethers.Contract(
-      consumer_contract.CONTRACT_ADDRESS,
-      consumer_contract.CONTRACT_ABI.abi,
-      ethers_signer
-    );
-    console.log("Pandora_random_contract Contract is ready");
 
     setPadoraPoolContract(api, pandora_contract);
     console.log("Pandora pool Contract is ready");
